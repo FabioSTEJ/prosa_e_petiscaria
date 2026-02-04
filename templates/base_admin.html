@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Adm - Prosa & Petiscaria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-body">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Prosa & Petiscaria</h3>
+            </div>
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="{{ url_for('painel_admin') }}"><i class="fa fa-home"></i> Início</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('gerenciar_usuarios') }}"><i class="fa fa-users"></i> Criar Usuários</a>
+                </li>
+                <li>
+                    <a href="#"><i class="fa fa-utensils"></i> Cardápio (Breve)</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out-alt"></i> Sair</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Ignorar as bibliotecas do Python
+venv/
+.venv/
+
+# Ignorar o Banco de Dados (Segurança!)
+*.db
+instance/
+
+# Ignorar arquivos temporários do sistema
+__pycache__/
+.vscode/
+.DS_Store

@@ -1,0 +1,145 @@
+/* Reset básico */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
+}
+
+body.login-page {
+    background-color: #1a1212; /* Fundo bem escuro */
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #f4e4bc;
+}
+
+.login-container {
+    background-color: rgba(45, 30, 30, 0.95); /* Leve transparência */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #e67e22;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-header h1 {
+    color: #e67e22;
+    margin-bottom: 5px;
+}
+
+.login-header p {
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+    opacity: 0.8;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    color: #e67e22;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #4a3434;
+    background: #1a1212;
+    color: #fff;
+    outline: none;
+}
+
+input:focus {
+    border-color: #e67e22;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: #e67e22;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #d35400;
+}
+
+.error-msg {
+    color: #ff4d4d;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.admin-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: rgba(45, 30, 30, 0.9);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #e67e22;
+}
+
+.form-cadastro input {
+    margin-bottom: 15px;
+}
+
+.user-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.user-table th, .user-table td {
+    padding: 12px;
+    border-bottom: 1px solid #4a3434;
+    text-align: left;
+}
+
+.user-table th {
+    color: #e67e22;
+}
+
+.wrapper { display: flex; align-items: stretch; min-height: 100vh; }
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #2d1e1e; /* Marrom rústico */
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar .sidebar-header { padding: 20px; background: #e67e22; }
+
+#sidebar ul.components { padding: 20px 0; border-bottom: 1px solid #47748b; }
+
+#sidebar ul li a {
+    padding: 15px 20px;
+    display: block;
+    color: #f4e4bc;
+    text-decoration: none;
+}
+
+#sidebar ul li a:hover { background: #e67e22; color: #fff; }
+
+#content { width: 100%; padding: 40px; background: #1a1212; color: white; }
+
+.stats-cards { display: flex; gap: 20px; margin-top: 30px; }
+.card { background: #2d1e1e; padding: 20px; border-radius: 8px; border: 1px solid #e67e22; flex: 1; }
+
+
