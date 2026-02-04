@@ -1,53 +1,55 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Gerenciar Garçons - Prosa & Petiscaria</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div class="admin-container">
-        <h1>Cadastrar Novo Garçom</h1>
-        
-        <form method="POST" class="form-cadastro">
-            <input type="text" name="username" placeholder="Nome do Garçom" required>
-            <input type="password" name="password" placeholder="Senha de Acesso" required>
-            <button type="submit">Cadastrar Garçom</button>
-        </form>
-        <form method="POST" class="form-cadastro">
-    <input type="text" name="username" placeholder="Nome do Usuário" required>
-    <input type="password" name="password" placeholder="Senha" required>
-    
-    <select name="cargo" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; background: #1a1212; color: white;">
-        <option value="garcom">Garçom</option>
-        <option value="admin">Administrador</option>
-    </select>
-    
-    <button type="submit">Cadastrar Usuário</button>
-</form>
-        <hr>
+{% extends "base_admin.html" %}
 
-        <h2>Garçons Ativos</h2>
-        <table class="user-table">
+{% block content %}
+<div class="container-mobile">
+    <h2>Gerenciar Equipe 👥</h2>
+    <p>Cadastre novos garçons ou administradores para o sistema.</p>
+    
+    <div class="card-form">
+        <form method="POST">
+            <input type="text" name="username" placeholder="Nome do Usuário (Ex: marcos_garcom)" required>
+            <input type="password" name="password" placeholder="Senha de Acesso" required>
+            
+            <label for="cargo" style="display: block; margin-top: 10px; font-weight: bold;">Nível de Acesso:</label>
+            <select name="cargo" id="cargo">
+                <option value="garcom">Garçom (Acesso aos pedidos)</option>
+                <option value="admin">Administrador (Gestão total)</option>
+            </select>
+            
+            <button type="submit" class="btn-success">Cadastrar Usuário</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <h3>Usuários Ativos</h3>
+    <div class="table-responsive">
+        <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Usuário</th>
                     <th>Cargo</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in usuarios %}
                 <tr>
-                    <td>{{ u.id }}</td>
-                    <td>{{ u.username }}</td>
-                    <td>{{ u.cargo }}</td>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>
+                        <span class="badge {{ 'badge-admin' if u.cargo == 'admin' else 'badge-garcom' }}">
+                            {{ u.cargo | capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u.username != session['username'] %}
+                           <a href="#" class="btn-delete" title="Desativar">🗑️</a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <br>
-        <a href="/login" style="color: #e67e22;">Voltar ao Login</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

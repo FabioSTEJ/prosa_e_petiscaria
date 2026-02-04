@@ -1,0 +1,49 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+    <h2>Gerenciar Cardápio 🍔</h2>
+    
+    <div class="card-form">
+        <form method="POST">
+            <input type="text" name="nome" placeholder="Nome do Produto (Ex: Batata Frita)" required>
+            <input type="number" step="0.01" name="preco" placeholder="Preço (Ex: 35.00)" required>
+            
+            <select name="categoria">
+                <option value="Bebidas">Bebidas</option>
+                <option value="Petiscos">Petiscos</option>
+                <option value="Doses">Doses</option>
+                <option value="Sobremesas">Sobremesas</option>
+            </select>
+            
+            <button type="submit" class="btn-success">Cadastrar Produto</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <h3>Itens Cadastrados</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in produtos %}
+                <tr>
+                    <td><strong>{{ p.nome }}</strong><br><small>{{ p.categoria }}</small></td>
+                    <td>R$ {{ "%.2f"|format(p.preco) }}</td>
+                    <td>
+                        <a href="{{ url_for('deletar_produto', id=p.id) }}" class="btn-delete" onclick="return confirm('Tem certeza?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -2,18 +2,33 @@
 
 {% block content %}
 <div class="welcome-section">
-    <h1>Bem-vindo, {{ session['username'] }}!</h1>
-    <p>O que deseja gerenciar hoje no Prosa & Petiscaria?</p>
+    <h2>Olá, {{ session['username'] }}! 🍻</h2>
+    <p>Painel de Gestão - Prosa & Petiscaria</p>
     
     <div class="stats-cards">
-        <div class="card">
-            <h3>Usuários</h3>
-            <p>Gerencie quem acessa o sistema.</p>
-        </div>
-        <div class="card">
-            <h3>Relatórios</h3>
-            <p>Consulte as vendas por data.</p>
-        </div>
+        <a href="{{ url_for('gerenciar_usuarios') }}" class="card-link">
+            <div class="card">
+                <i class="fa fa-users fa-2x"></i>
+                <h3>Equipe</h3>
+                <p>Cadastrar Garçons</p>
+            </div>
+        </a>
+
+        <a href="#" class="card-link">
+            <div class="card">
+                <i class="fa fa-utensils fa-2x"></i>
+                <h3>Cardápio</h3>
+                <p>Preços e Itens</p>
+            </div>
+        </a>
+
+        <a href="#" class="card-link">
+            <div class="card">
+                <i class="fa fa-chart-line fa-2x"></i>
+                <h3>Vendas</h3>
+                <p>O que mais saiu hoje</p>
+            </div>
+        </a>
     </div>
 </div>
 {% endblock %}

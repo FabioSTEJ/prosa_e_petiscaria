@@ -143,3 +143,113 @@ input:focus {
 .card { background: #2d1e1e; padding: 20px; border-radius: 8px; border: 1px solid #e67e22; flex: 1; }
 
 
+/* Isso vale para qualquer tela */
+.stats-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Faz os cards pularem linha no celular */
+}
+
+.card {
+    min-width: 250px;
+    padding: 30px; /* Botões maiores para dedos, não para mouses */
+    text-align: center;
+    border-radius: 12px;
+}
+
+/* --- AJUSTES PARA CELULAR (Telas menores que 768px) --- */
+@media (max-width: 768px) {
+    .wrapper {
+        flex-direction: column; /* Barra lateral vai para cima ou some */
+    }
+
+    #sidebar {
+        min-width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    #sidebar ul {
+        display: flex; /* Transforma o menu em uma linha horizontal */
+        overflow-x: auto; /* Se tiver muitos itens, dá pra deslizar */
+    }
+
+    #sidebar ul li a {
+        padding: 10px 15px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    #content {
+        padding: 15px; /* Menos margem para aproveitar a tela do celular */
+    }
+}
+
+input, select, .btn-success {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 16px; /* Evita zoom automático no iPhone */
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.btn-delete {
+    color: #dc3545;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+/* Destaca o link da página atual no menu */
+.components li.active > a {
+    background: #4e73df;
+    color: white !important;
+    font-weight: bold;
+}
+
+.components li a i {
+    margin-right: 10px; /* Espaço entre o ícone e o texto */
+    width: 20px;
+    text-align: center;
+}
+
+
+/* Etiquetas de Cargo */
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.badge-admin {
+    background-color: #fce4ec;
+    color: #d81b60;
+    border: 1px solid #d81b60;
+}
+
+.badge-garcom {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #2e7d32;
+}
+
+/* Ajuste para o formulário no mobile */
+.card-form label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+}
