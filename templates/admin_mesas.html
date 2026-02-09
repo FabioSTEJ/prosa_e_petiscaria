@@ -1,47 +1,50 @@
 {% extends "base_admin.html" %}
 
 {% block content %}
-<div class="container-mobile">
-    <h2>Configurar Salão 🪑</h2>
+<div class="container-admin">
+    <div class="header-flex">
+        <h2>Monitoramento do Salão 🪑</h2>
+        <span class="badge-total">Total: {{ mesas|length }} Mesas</span>
+    </div>
     
     <div class="card-form">
-        <p>Quantas mesas o seu estabelecimento possui atualmente?</p>
-        <form method="POST">
-            <input type="number" name="quantidade" placeholder="Ex: 20" required min="1">
-            <button type="submit" class="btn-success">Atualizar Total de Mesas</button>
+        <h3>Configuração de Infraestrutura</h3>
+        <p class="text-muted">Ajuste a quantidade total de mesas físicas disponíveis no estabelecimento.</p>
+        <form method="POST" class="form-inline">
+            <div class="form-group flex-1">
+                <label>Quantidade de Mesas:</label>
+                <input type="number" name="quantidade" value="{{ mesas|length }}" required min="1">
+            </div>
+            <button type="submit" class="btn-success btn-auto">Salvar Alteração</button>
         </form>
     </div>
 
-    <hr>
+    <hr class="divisor">
 
-    <h3>Mapa de Mesas</h3>
+    <h3>Acompanhamento do Salão</h3>
     <div class="grid-mesas">
         {% for m in mesas %}
-        <div class="mesa-item">
-            <i class="fas fa-square-poll-horizontal fa-2x"></i>
-            <span>Mesa {{ m.numero }}</span>
-            <small>{{ m.status }}</small>
+        <div class="mesa-card {{ 'mesa-ocupada' if m.status == 'Ocupada' else 'mesa-livre' }}">
+            <div class="mesa-header">
+                <span class="mesa-numero">Mesa {{ m.numero }}</span>
+                <span class="mesa-status-indicator"></span>
+            </div>
+            
+            <div class="mesa-body">
+                {% if m.status == 'Ocupada' %}
+                    <p class="mesa-info"><strong>Atendente:</strong> {{ m.garcom_atual }}</p>
+                    <p class="mesa-info"><strong>Consumo:</strong> <span class="preco-tag">R$ {{ "%.2f"|format(m.total_acumulado) }}</span></p>
+                    <p class="mesa-time"><i class="far fa-clock"></i> Aberta às {{ m.hora_abertura }}</p>
+                    <a href="#" class="btn-action-view">Auditar Pedidos</a>
+                {% else %}
+                    <div class="mesa-vazia-container">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Livre para uso</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
-
-<style>
-    .grid-mesas {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 15px;
-        margin-top: 20px;
-    }
-    .mesa-item {
-        background: #f8f9fc;
-        border: 1px solid #e3e6f0;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        color: #4e73df;
-    }
-</style>
 {% endblock %}

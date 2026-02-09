@@ -1,0 +1,26 @@
+/* Mapa de Mesas Mobile-First */
+.grid-mesas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 15px;
+}
+
+.card-mesa {
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    text-decoration: none;
+    color: white !important;
+    font-weight: bold;
+    transition: transform 0.1s;
+}
+
+.card-mesa:active { transform: scale(0.95); }
+
+.disponivel { background: linear-gradient(135deg, #28a745, #218838); }
+.ocupada { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+.mesa-numero { font-size: 1.8rem; }

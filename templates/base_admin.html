@@ -4,66 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prosa & Petiscaria - Admin</title>
+    <title>Prosa & Petiscaria - Painel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body class="admin-body">
     <div class="wrapper">
-        <nav id="sidebar">
+        <nav class="sidebar">
             <div class="sidebar-header">
-                <h3>Prosa & Petiscaria</h3>
+                <h3><i class="fas fa-utensils"></i> Prosa & Petiscaria</h3>
             </div>
-            
-            <ul class="list-unstyled components">
-                <p>Painel Administrativo</p>
+            <hr>
 
-                <li class="{{ 'active' if request.endpoint == 'painel_admin' }}">
-                    <a href="{{ url_for('painel_admin') }}">
-                        <i class="fas fa-home"></i> Início
-                    </a>
-                </li>
+            <a href="{{ url_for('painel_admin' if session['cargo'] == 'admin' else 'painel_garcom') }}">
+                <i class="fas fa-home"></i> Início
+            </a>
 
-                <li class="{{ 'active' if request.endpoint == 'gerenciar_cardapio' }}">
-                    <a href="{{ url_for('gerenciar_cardapio') }}">
-                        <i class="fas fa-utensils"></i> Gerenciar Cardápio
-                    </a>
-                </li>
+            {% if session['cargo'] == 'admin' %}
+            <small class="text-muted">ADMINISTRAÇÃO</small>
+            <a href="{{ url_for('gerenciar_usuarios') }}">
+                <i class="fas fa-users"></i> Equipe
+            </a>
+            <a href="{{ url_for('gerenciar_cardapio') }}">
+                <i class="fas fa-hamburger"></i> Cardápio
+            </a>
+            <a href="{{ url_for('gerenciar_mesas') }}">
+                <i class="fas fa-table"></i> Mesas
+            </a>
+            <a href="#">
+                <i class="fas fa-chart-line"></i> Relatórios
+            </a>
+            <a href="#">
+                <i class="fas fa-cog"></i> Configurações
+            </a>
+            {% else %}
+            <small class="text-muted">ATENDIMENTO</small>
+            <a href="{{ url_for('painel_garcom') }}">
+                <i class="fas fa-table"></i> Mapa de Mesas
+            </a>
+            <a href="#">
+                <i class="fas fa-clipboard-list"></i> Meus Pedidos
+            </a>
+            <a href="#">
+                <i class="fas fa-star"></i> Minha Pontuação
+            </a>
+            {% endif %}
 
-                <li class="{{ 'active' if request.endpoint == 'gerenciar_usuarios' }}">
-                    <a href="{{ url_for('gerenciar_usuarios') }}">
-                        <i class="fas fa-users"></i> Gerenciar Usuarios
-                    </a>
-                </li>
-
-                <li class="{{ 'active' if request.endpoint == 'gerenciar_mesas' }}">
-                    <a href="{{ url_for('gerenciar_mesas') }}">
-                        <i class="fas fa-chair"></i> Gerenciar Mesas
-                    </a>
-                </li>
-
-                <li class="logout-item">
-                    <a href="{{ url_for('logout') }}" style="color: #ff4d4d;">
-                        <i class="fas fa-sign-out-alt"></i> Sair
-                    </a>
-                </li>
-            </ul>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
         </nav>
 
-        <div id="content">
+        <main id="content">
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                {% for message in messages %}
-                  <div class="alert alert-info" style="padding: 10px; background: #d1ecf1; border-radius: 5px; margin-bottom: 15px;">
-                      {{ message }}
-                  </div>
-                {% endfor %}
-              {% endif %}
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
-        </div>
+        </main>
     </div>
 </body>
 

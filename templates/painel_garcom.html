@@ -1,0 +1,19 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+    <div class="header-garcom">
+        <h2>Mapa de Mesas 🍻</h2>
+        <p>Olá, <strong>{{ session['nome_real'] }}</strong>! Bom trabalho.</p>
+    </div>
+
+    <div class="grid-mesas">
+        {% for mesa in mesas %}
+        <a href="#" class="card-mesa {{ 'ocupada' if mesa.status != 'Livre' else 'disponivel' }}">
+            <div class="mesa-numero">{{ mesa.numero }}</div>
+            <div class="mesa-status">{{ mesa.status }}</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

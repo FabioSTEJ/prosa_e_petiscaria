@@ -1,0 +1,391 @@
+/* --- ESTILOS DE GESTÃO (TABELAS) --- */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+.table th, .table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+}
+
+.table th {
+    background-color: #fafafa;
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* Efeitos de Linha */
+.table tbody tr:hover {
+    background-color: #fdfaf5; /* Hover bege clarinho */
+    transition: background 0.2s;
+}
+
+.row-inactive {
+    opacity: 0.6;
+    background-color: #f9f9f9;
+}
+
+/* Textos dentro da tabela */
+.user-main-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.user-username {
+    color: #95a5a6;
+}
+
+/* Status (Ativo/Inativo) */
+.status-indicator {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-active { color: #27ae60; }
+.status-inactive { color: #e74c3c; }
+
+/* --- BADGES --- */
+.badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge-admin { background-color: #d1ecf1; color: #0c5460; }
+.badge-garcom { background-color: #e2e3e5; color: #383d41; }
+.badge-categoria { background-color: #f1c40f; color: #000; }
+
+/* --- BOTÕES DE AÇÃO NA TABELA --- */
+.acoes-botoes {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-edit { background-color: #ebf5ff; color: #3498db; }
+.btn-edit:hover { background-color: #3498db; color: white; }
+
+.btn-warning { background-color: #fff3cd; color: #856404; }
+.btn-warning:hover { background-color: #f1c40f; color: white; }
+
+.btn-success-small { background-color: #d4edda; color: #155724; }
+.btn-success-small:hover { background-color: #27ae60; color: white; }
+
+.btn-delete { background-color: #fff5f5; color: #e74c3c; }
+.btn-delete:hover { background-color: #e74c3c; color: white; }
+
+/* --- FORMULÁRIOS --- */
+.card-form, .table-responsive {
+    background: #ffffff;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(139, 126, 116, 0.12);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #34495e;
+    font-size: 0.9rem;
+}
+
+input[type="text"], 
+input[type="number"], 
+input[type="password"],
+select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #2c3e50; /* Cor da Sidebar */
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+/* Botão Principal de Cadastro */
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);
+}
+
+.btn-success:hover {
+    background-color: #219150;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(39, 174, 96, 0.3);
+}
+
+/* Elementos de Separação */
+.divisor {
+    border: 0;
+    border-top: 1px solid #e0e0e0;
+    margin: 40px 0;
+}
+
+.text-center { text-align: center !important; }
+.justify-center { justify-content: center; }
+
+/* GRID DE MESAS */
+.grid-mesas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.mesa-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(139, 126, 116, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 5px solid #bdc3c7; /* Cor padrão neutra */
+}
+
+.mesa-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(139, 126, 116, 0.15);
+}
+
+/* Diferenciando Status */
+.mesa-livre { border-top-color: #2ecc71; }
+.mesa-ocupada { border-top-color: #e74c3c; }
+
+.mesa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.mesa-numero {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.mesa-status-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.mesa-livre .mesa-status-badge { background: #d4edda; color: #155724; }
+.mesa-ocupada .mesa-status-badge { background: #f8d7da; color: #721c24; }
+
+.mesa-body { text-align: left; }
+
+.mesa-info {
+    font-size: 0.85rem;
+    margin: 4px 0;
+    color: #34495e;
+}
+
+.mesa-time {
+    font-size: 0.75rem;
+    color: #95a5a6;
+    margin-bottom: 10px;
+}
+
+.mesa-icon-vazia {
+    text-align: center;
+    padding: 15px 0;
+    color: #ecf0f1;
+    font-size: 2rem;
+}
+
+/* Utilitários de Botão dentro do Card */
+.btn-action-outline {
+    display: block;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #3498db;
+    color: #3498db;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-action-outline:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+/* Formulário Inline para o topo */
+.form-inline {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.flex-1 { flex: 1; }
+.btn-auto { width: auto !important; }
+
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.badge-total {
+    background: #2c3e50;
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.mesa-status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.mesa-livre .mesa-status-indicator { background-color: #2ecc71; box-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
+.mesa-ocupada .mesa-status-indicator { background-color: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
+
+.mesa-vazia-container {
+    text-align: center;
+    color: #bdc3c7;
+    padding: 10px 0;
+}
+
+.btn-action-view {
+    display: block;
+    text-align: center;
+    background: #f8f9fa;
+    color: #2c3e50;
+    padding: 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: 1px solid #dee2e6;
+    margin-top: 10px;
+}
+
+.btn-action-view:hover {
+    background: #e9ecef;
+}
+
+/* DASHBOARD LAYOUT */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(139, 126, 116, 0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Cores dos Ícones */
+.icon-vendas { background: #e8f5e9; color: #27ae60; }
+.icon-mesas { background: #e3f2fd; color: #3498db; }
+.icon-pedidos { background: #fff3e0; color: #f39c12; }
+.icon-ticket { background: #f3e5f5; color: #9b59b6; }
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.dashboard-grid {
+    display: flex;
+    gap: 25px;
+}
+
+.flex-2 { flex: 2; }
+.flex-1 { flex: 1; }
+
+.garcom-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.garcom-item:last-child { border-bottom: none; }
+
+/* Responsividade do Dashboard */
+@media (max-width: 1024px) {
+    .dashboard-grid { flex-direction: column; }
+}

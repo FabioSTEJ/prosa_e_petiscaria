@@ -1,50 +1,80 @@
 {% extends "base_admin.html" %}
 
 {% block content %}
-<div class="container-mobile">
+<div class="container-admin">
     <h2>Gerenciar Equipe 👥</h2>
-    <p>Cadastre novos garçons ou administradores para o sistema.</p>
-    
+
     <div class="card-form">
         <form method="POST">
-            <input type="text" name="username" placeholder="Nome do Usuário (Ex: marcos_garcom)" required>
-            <input type="password" name="password" placeholder="Senha de Acesso" required>
+            <div class="form-group">
+                <label>Nome Completo (Para exibição):</label>
+                <input type="text" name="nome_exibicao" placeholder="Ex: Fábio Silva" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nome de Usuário (Para Login):</label>
+                <input type="text" name="username" placeholder="Ex: fabio_garcom" required>
+            </div>
+
+            <div class="form-group">
+                <label>Senha de Acesso:</label>
+                <input type="password" name="password" placeholder="Digite a senha" required>
+            </div>
             
-            <label for="cargo" style="display: block; margin-top: 10px; font-weight: bold;">Nível de Acesso:</label>
-            <select name="cargo" id="cargo">
-                <option value="garcom">Garçom (Acesso aos pedidos)</option>
-                <option value="admin">Administrador (Gestão total)</option>
-            </select>
+            <div class="form-group">
+                <label>Nível de Acesso:</label>
+                <select name="cargo">
+                    <option value="garcom">Garçom</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
             
             <button type="submit" class="btn-success">Cadastrar Usuário</button>
         </form>
     </div>
 
-    <hr>
+    <hr class="divisor">
 
-    <h3>Usuários Ativos</h3>
+    <h3>Equipe Cadastrada</h3>
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Usuário</th>
+                    <th>Nome / Login</th>
                     <th>Cargo</th>
+                    <th>Status</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in usuarios %}
-                <tr>
-                    <td><strong>{{ u.username }}</strong></td>
+                <tr class="{{ 'row-inactive' if not u.ativo }}">
+                    <td>
+                        <span class="user-main-name">{{ u.nome_exibicao }}</span><br>
+                        <small class="user-username">@{{ u.username }}</small>
+                    </td>
                     <td>
                         <span class="badge {{ 'badge-admin' if u.cargo == 'admin' else 'badge-garcom' }}">
                             {{ u.cargo | capitalize }}
                         </span>
                     </td>
                     <td>
-                        {% if u.username != session['username'] %}
-                           <a href="#" class="btn-delete" title="Desativar">🗑️</a>
-                        {% endif %}
+                        <span class="status-indicator {{ 'status-active' if u.ativo else 'status-inactive' }}">
+                            ● {{ 'Ativo' if u.ativo else 'Inativo' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="acoes-botoes">
+                            <a href="#" class="btn-action btn-edit" title="Resetar Senha">🔑</a>
+                            
+                            <a href="#" class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}" title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
+                                {{ '🚫' if u.ativo else '✅' }}
+                            </a>
+
+                            {% if u.username != session['username'] %}
+                                <a href="#" class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

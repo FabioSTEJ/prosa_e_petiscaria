@@ -1,0 +1,80 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-admin">
+    <div class="header-flex">
+        <h2>Painel de Controle 📊</h2>
+        <span class="text-muted">{{ data_atual }}</span>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon icon-vendas"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Vendas Hoje</span>
+                <span class="stat-value">R$ {{ "%.2f"|format(vendas_hoje) }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-mesas"><i class="fas fa-utensils"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Mesas Ativas</span>
+                <span class="stat-value">{{ mesas_ativas }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-pedidos"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Pedidos Realizados</span>
+                <span class="stat-value">{{ total_pedidos }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-ticket"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Ticket Médio</span>
+                <span class="stat-value">R$ {{ "%.2f"|format(ticket_medio) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card-form flex-2">
+            <h3><i class="fas fa-fire"></i> Mais Vendidos</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in mais_vendidos %}
+                    <tr>
+                        <td>{{ p.nome }}</td>
+                        <td>{{ p.quantidade }}</td>
+                        <td class="preco-tag">R$ {{ "%.2f"|format(p.total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-form flex-1">
+            <h3><i class="fas fa-users"></i> Desempenho Equipe</h3>
+            <div class="equipe-lista">
+                {% for g in desempenho_garcons %}
+                <div class="garcom-item">
+                    <span class="user-main-name">{{ g.nome }}</span>
+                    <span class="badge badge-admin">R$ {{ "%.2f"|format(g.total_vendas) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

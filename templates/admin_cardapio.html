@@ -1,44 +1,67 @@
 {% extends "base_admin.html" %}
 
 {% block content %}
-<div class="container-mobile">
-    <h2>Gerenciar Cardápio 🍔</h2>
+<div class="container-admin">
+    <h2><i class="fas fa-hamburger"></i> Gerenciar Cardápio</h2>
     
     <div class="card-form">
+        <h3>Cadastrar Novo Item</h3>
         <form method="POST">
-            <input type="text" name="nome" placeholder="Nome do Produto (Ex: Batata Frita)" required>
-            <input type="number" step="0.01" name="preco" placeholder="Preço (Ex: 35.00)" required>
+            <div class="form-group">
+                <label>Nome do Produto:</label>
+                <input type="text" name="nome" placeholder="Ex: Batata Frita com Queijo" required>
+            </div>
             
-            <select name="categoria">
-                <option value="Bebidas">Bebidas</option>
-                <option value="Petiscos">Petiscos</option>
-                <option value="Doses">Doses</option>
-                <option value="Sobremesas">Sobremesas</option>
-            </select>
+            <div class="form-group">
+                <label>Preço de Venda (R$):</label>
+                <input type="number" step="0.01" name="preco" placeholder="35.00" required>
+            </div>
             
-            <button type="submit" class="btn-success">Cadastrar Produto</button>
+            <div class="form-group">
+                <label>Categoria:</label>
+                <select name="categoria">
+                    <option value="Bebidas">🍺 Bebidas</option>
+                    <option value="Petiscos">🍟 Petiscos</option>
+                    <option value="Doses">🥃 Doses</option>
+                    <option value="Sobremesas">🍰 Sobremesas</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-success">
+                <i class="fas fa-plus-circle"></i> Adicionar ao Cardápio
+            </button>
         </form>
     </div>
 
-    <hr>
+    <hr class="divisor">
 
-    <h3>Itens Cadastrados</h3>
+    <h3><i class="fas fa-list-ul"></i> Itens Cadastrados</h3>
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Item</th>
+                    <th>Item / Categoria</th>
                     <th>Preço</th>
-                    <th>Ações</th>
+                    <th class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in produtos %}
                 <tr>
-                    <td><strong>{{ p.nome }}</strong><br><small>{{ p.categoria }}</small></td>
-                    <td>R$ {{ "%.2f"|format(p.preco) }}</td>
                     <td>
-                        <a href="{{ url_for('deletar_produto', id=p.id) }}" class="btn-delete" onclick="return confirm('Tem certeza?')">🗑️</a>
+                        <span class="user-main-name">{{ p.nome }}</span><br>
+                        <span class="badge badge-categoria">{{ p.categoria }}</span>
+                    </td>
+                    <td class="preco-tag">R$ {{ "%.2f"|format(p.preco) }}</td>
+                    <td class="text-center">
+                        <div class="acoes-botoes justify-center">
+                            <a href="{{ url_for('deletar_produto', id=p.id) }}" 
+                               class="btn-action btn-delete" 
+                               onclick="return confirm('Excluir este item permanentemente?')" 
+                               title="Excluir">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

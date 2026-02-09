@@ -1,0 +1,79 @@
+/* Estrutura Principal */
+.wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    color: #fff;
+    height: 100vh;
+    padding: 30px 20px;
+    position: fixed; /* Mantém a barra fixa */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+#content {
+    /* Ocupa a tela toda, mas empurramos o conteúdo interno com o margin-left */
+    flex: 1;
+    margin-left: 260px; 
+    
+    /* A "FOLGA" QUE VOCÊ QUER: 
+       Aumentei o padding lateral para 80px para dar bastante respiro lateral */
+    padding: 60px 80px; 
+    
+    background-color: transparent; 
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container que centraliza os cards dentro da folga */
+.container-admin {
+    width: 100%;
+    max-width: 1100px; /* Limita para não esticar demais em telas ultra-wide */
+    margin: 0 auto;    /* Centraliza o bloco de conteúdo na área bege */
+}
+
+/* Responsividade - Ajuste para Tablets */
+@media (max-width: 1100px) {
+    #content {
+        padding: 40px 40px; /* Reduz a folga lateral em telas médias */
+    }
+}
+
+/* Responsividade - Ajuste para Celulares */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        height: auto;
+        position: relative; /* No celular, ela fica no topo e não fixa */
+    }
+    #content {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px;
+    }
+    .wrapper {
+        flex-direction: column;
+    }
+}
+
+/* Global Body Reset */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #FDF5E6; /* Bege Suave */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}

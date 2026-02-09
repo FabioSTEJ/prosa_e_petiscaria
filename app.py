@@ -3,6 +3,8 @@ from database import db
 from models import Usuario, Pedido, Produto, Mesa
 from functools import wraps
 import os
+from datetime import datetime
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'petiscaria_secreta_123'
@@ -21,13 +23,14 @@ with app.app_context():
     if not Usuario.query.filter_by(username='adminprosa').first():
         novo_admin = Usuario(
             username='adminprosa',
-            nome_exibicao='Administrador', # Adicione isso aqui!
+            nome_exibicao='Administrador',
             senha='petiscaria2026',
-            cargo='admin'
+            cargo='admin',
+            ativo=True
         )
         db.session.add(novo_admin)
         db.session.commit()
-        print(">>> SUCESSO: Banco resetado e Admin criado com nome real!")
+        print(">>> SUCESSO: Banco recriado e Admin pronto!")
 
 # Decorator de Segurança
 def login_requerido(cargo_necessario=None):
@@ -35,7 +38,6 @@ def login_requerido(cargo_necessario=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if 'usuario_id' not in session:
-                flash("Por favor, faça login.")
                 return redirect(url_for('login'))
             if cargo_necessario and session.get('cargo') != cargo_necessario:
                 flash("Acesso negado!")
@@ -55,32 +57,91 @@ def login():
     if request.method == 'POST':
         user_input = request.form.get('username')
         pwd_input = request.form.get('password')
-        usuario = Usuario.query.filter_by(username=user_input).first()
+        
+        # Agora verificamos se o usuário existe E está ativo
+        usuario = Usuario.query.filter_by(username=user_input, ativo=True).first()
         
         if usuario and usuario.senha == pwd_input:
-            session.update({'usuario_id': usuario.id, 'username': usuario.username, 'cargo': usuario.cargo})
-            return redirect(url_for('painel_admin' if usuario.cargo == 'admin' else 'painel_garcom'))
+            session['usuario_id'] = usuario.id
+            session['username'] = usuario.username
+            session['nome_real'] = usuario.nome_exibicao or usuario.username
+            session['cargo'] = usuario.cargo
+            
+            if usuario.cargo == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('painel_garcom'))
         
-        flash("Usuário ou senha inválidos!")
+        flash("Usuário/Senha inválidos ou conta inativa!")
     return render_template("login.html")
 
 @app.route("/admin/painel")
 @login_requerido(cargo_necessario='admin')
 def painel_admin():
-    return render_template("index_admin.html")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/dashboard')
+@login_requerido(cargo_necessario='admin')
+def admin_dashboard():
+    hoje = datetime.now().date()
+    
+    # 1. Vendas Reais do Dia (Soma usando o novo campo valor_total)
+    vendas_hoje = db.session.query(func.sum(Pedido.valor_total)).filter(
+        func.date(Pedido.data) == hoje,
+        Pedido.status == 'Pago'
+    ).scalar() or 0.0
+
+    # 2. Mesas Ocupadas
+    mesas_ativas = Mesa.query.filter_by(status='Ocupada').count()
+
+    # 3. Total de Pedidos do dia
+    total_pedidos = Pedido.query.filter(func.date(Pedido.data) == hoje).count()
+
+    # 4. Ticket Médio
+    ticket_medio = vendas_hoje / total_pedidos if total_pedidos > 0 else 0.0
+
+    # 5. Desempenho Real dos Garçons (Ranking)
+    # Buscamos a soma de vendas agrupada por nome do garçom
+    desempenho = db.session.query(
+        Usuario.nome_exibicao, 
+        func.sum(Pedido.valor_total)
+    ).join(Pedido).filter(
+        func.date(Pedido.data) == hoje
+    ).group_by(Usuario.id).all()
+
+    contexto = {
+        "vendas_hoje": vendas_hoje,
+        "mesas_ativas": mesas_ativas,
+        "total_pedidos": total_pedidos,
+        "ticket_medio": ticket_medio,
+        "data_atual": datetime.now().strftime('%d/%m/%Y'),
+        "mais_vendidos": [], # Lógica de agregação de produtos pode vir depois
+        "desempenho_garcons": [{"nome": d[0], "total_vendas": d[1]} for d in desempenho]
+    }
+    return render_template('admin_dashboard.html', **contexto)
 
 @app.route("/admin/usuarios", methods=['GET', 'POST'])
 @login_requerido(cargo_necessario='admin')
 def gerenciar_usuarios():
     if request.method == 'POST':
-        novo_nome = request.form.get('username')
-        nova_senha = request.form.get('password')
-        tipo = request.form.get('cargo')
-        if novo_nome and nova_senha:
-            db.session.add(Usuario(username=novo_nome, senha=nova_senha, cargo=tipo))
+        nome_login = request.form.get('username')
+        nome_real = request.form.get('nome_exibicao')
+        senha_acesso = request.form.get('password')
+        cargo_usuario = request.form.get('cargo')
+        
+        if nome_login and senha_acesso:
+            novo_usuario = Usuario(
+                username=nome_login,
+                nome_exibicao=nome_real,
+                senha=senha_acesso,
+                cargo=cargo_usuario,
+                ativo=True
+            )
+            db.session.add(novo_usuario)
             db.session.commit()
-            flash(f"Usuário {novo_nome} cadastrado!")
-    
+            flash(f"Usuário {nome_real} cadastrado!")
+            return redirect(url_for('gerenciar_usuarios'))
+
     usuarios = Usuario.query.all()
     return render_template("admin_usuarios.html", usuarios=usuarios)
 
@@ -89,20 +150,23 @@ def gerenciar_usuarios():
 def gerenciar_cardapio():
     if request.method == 'POST':
         nome = request.form.get('nome')
-        preco = float(request.form.get('preco'))
+        preco_raw = request.form.get('preco')
         categoria = request.form.get('categoria')
         
-        if nome and preco:
-            novo_produto = Produto(nome=nome, preco=preco, categoria=categoria)
-            db.session.add(novo_produto)
-            db.session.commit()
-            flash(f"Produto '{nome}' adicionado com sucesso!")
+        if nome and preco_raw:
+            try:
+                preco = float(preco_raw)
+                novo_produto = Produto(nome=nome, preco=preco, categoria=categoria)
+                db.session.add(novo_produto)
+                db.session.commit()
+                flash(f"Produto '{nome}' adicionado!")
+            except ValueError:
+                flash("Preço inválido!")
             return redirect(url_for('gerenciar_cardapio'))
 
-    produtos = Produto.query.all()
+    produtos = Produto.query.order_by(Produto.categoria).all()
     return render_template("admin_cardapio.html", produtos=produtos)
 
-# Rota extra para deletar itens (muito útil!)
 @app.route("/admin/cardapio/deletar/<int:id>")
 @login_requerido(cargo_necessario='admin')
 def deletar_produto(id):
@@ -117,27 +181,28 @@ def deletar_produto(id):
 @login_requerido(cargo_necessario='admin')
 def gerenciar_mesas():
     if request.method == 'POST':
-        quantidade = int(request.form.get('quantidade'))
-        
-        # Limpa as mesas antigas para reconfigurar (opcional, mas evita bagunça)
-        # Se preferir apenas adicionar, remova a linha abaixo
-        Mesa.query.delete() 
-        
-        for i in range(1, quantidade + 1):
-            nova_mesa = Mesa(numero=str(i), status='Livre')
-            db.session.add(nova_mesa)
-        
-        db.session.commit()
-        flash(f"Salão configurado com {quantidade} mesas!")
-        return redirect(url_for('gerenciar_mesas'))
+        quantidade_str = request.form.get('quantidade')
+        if quantidade_str:
+            quantidade = int(quantidade_str)
+            # Para evitar erros de FK ao deletar mesas com pedidos, 
+            # em um sistema real faríamos um 'soft delete' ou aviso.
+            Mesa.query.delete() 
+            for i in range(1, quantidade + 1):
+                numero_formatado = str(i).zfill(2)
+                nova_mesa = Mesa(numero=numero_formatado, status='Livre')
+                db.session.add(nova_mesa)
+            db.session.commit()
+            flash(f"Salão configurado com {quantidade} mesas!")
+            return redirect(url_for('gerenciar_mesas'))
 
-    mesas = Mesa.query.all()
+    mesas = Mesa.query.order_by(Mesa.numero).all()
     return render_template("admin_mesas.html", mesas=mesas)
 
 @app.route("/garcom/painel")
 @login_requerido(cargo_necessario='garcom')
 def painel_garcom():
-    return render_template("painel_garcom.html")
+    mesas = Mesa.query.order_by(Mesa.numero).all()
+    return render_template("painel_garcom.html", mesas=mesas)
 
 @app.route("/logout")
 def logout():

@@ -1,255 +1,38 @@
-/* Reset básico */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box;
+/* style.css - Arquivo Mestre */
+
+/* 1. Imports (Sempre no topo) */
+@import url('layout.css');
+@import url('componentes.css');
+@import url('admin.css');
+@import url('garcom.css');
+
+/* 2. Definições de Variáveis Globais */
+:root {
+    /* Cor Bege Suave (Bege clássico: #F5F5DC ou um Bege mais moderno: #FDF5E6) */
+    --bg-fundo: #FDF5E6;       
+    --bg-card: #ffffff;        /* Branco para os cards se destacarem no bege */
+    --primaria: #2c3e50;       
+    --destaque: #f1c40f;       
+    --detalhe: #e67e22;        
 }
 
-body.login-page {
-    background-color: #1a1212; /* Fundo bem escuro */
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: #f4e4bc;
-}
-
-.login-container {
-    background-color: rgba(45, 30, 30, 0.95); /* Leve transparência */
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    border: 1px solid #e67e22;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.login-header h1 {
-    color: #e67e22;
-    margin-bottom: 5px;
-}
-
-.login-header p {
-    font-size: 0.9rem;
-    margin-bottom: 30px;
-    opacity: 0.8;
-}
-
-.input-group {
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.85rem;
-    color: #e67e22;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #4a3434;
-    background: #1a1212;
-    color: #fff;
-    outline: none;
-}
-
-input:focus {
-    border-color: #e67e22;
-}
-
-.btn-login {
-    width: 100%;
-    padding: 12px;
-    background-color: #e67e22;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-login:hover {
-    background-color: #d35400;
+/* 3. Estilos Base */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Aqui aplicamos a cor bege em todo o site */
+    background-color: var(--bg-fundo) !important; 
+    color: #333;
 }
 
 .error-msg {
-    color: #ff4d4d;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
     margin-top: 15px;
     font-size: 0.9rem;
-}
-
-.admin-container {
-    max-width: 600px;
-    margin: 50px auto;
-    background: rgba(45, 30, 30, 0.9);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid #e67e22;
-}
-
-.form-cadastro input {
-    margin-bottom: 15px;
-}
-
-.user-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
-
-.user-table th, .user-table td {
-    padding: 12px;
-    border-bottom: 1px solid #4a3434;
-    text-align: left;
-}
-
-.user-table th {
-    color: #e67e22;
-}
-
-.wrapper { display: flex; align-items: stretch; min-height: 100vh; }
-
-#sidebar {
-    min-width: 250px;
-    max-width: 250px;
-    background: #2d1e1e; /* Marrom rústico */
-    color: #fff;
-    transition: all 0.3s;
-}
-
-#sidebar .sidebar-header { padding: 20px; background: #e67e22; }
-
-#sidebar ul.components { padding: 20px 0; border-bottom: 1px solid #47748b; }
-
-#sidebar ul li a {
-    padding: 15px 20px;
-    display: block;
-    color: #f4e4bc;
-    text-decoration: none;
-}
-
-#sidebar ul li a:hover { background: #e67e22; color: #fff; }
-
-#content { width: 100%; padding: 40px; background: #1a1212; color: white; }
-
-.stats-cards { display: flex; gap: 20px; margin-top: 30px; }
-.card { background: #2d1e1e; padding: 20px; border-radius: 8px; border: 1px solid #e67e22; flex: 1; }
-
-
-/* Isso vale para qualquer tela */
-.stats-cards {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap; /* Faz os cards pularem linha no celular */
-}
-
-.card {
-    min-width: 250px;
-    padding: 30px; /* Botões maiores para dedos, não para mouses */
     text-align: center;
-    border-radius: 12px;
-}
-
-/* --- AJUSTES PARA CELULAR (Telas menores que 768px) --- */
-@media (max-width: 768px) {
-    .wrapper {
-        flex-direction: column; /* Barra lateral vai para cima ou some */
-    }
-
-    #sidebar {
-        min-width: 100%;
-        max-width: 100%;
-        height: auto;
-    }
-
-    #sidebar ul {
-        display: flex; /* Transforma o menu em uma linha horizontal */
-        overflow-x: auto; /* Se tiver muitos itens, dá pra deslizar */
-    }
-
-    #sidebar ul li a {
-        padding: 10px 15px;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-
-    #content {
-        padding: 15px; /* Menos margem para aproveitar a tela do celular */
-    }
-}
-
-input, select, .btn-success {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    font-size: 16px; /* Evita zoom automático no iPhone */
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: white;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
-
-.table-responsive {
-    overflow-x: auto;
-}
-
-.btn-delete {
-    color: #dc3545;
-    text-decoration: none;
-    font-size: 20px;
-}
-
-/* Destaca o link da página atual no menu */
-.components li.active > a {
-    background: #4e73df;
-    color: white !important;
-    font-weight: bold;
-}
-
-.components li a i {
-    margin-right: 10px; /* Espaço entre o ícone e o texto */
-    width: 20px;
-    text-align: center;
-}
-
-
-/* Etiquetas de Cargo */
-.badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.badge-admin {
-    background-color: #fce4ec;
-    color: #d81b60;
-    border: 1px solid #d81b60;
-}
-
-.badge-garcom {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #2e7d32;
-}
-
-/* Ajuste para o formulário no mobile */
-.card-form label {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 5px;
+    border: 1px solid #f5c6cb;
 }
