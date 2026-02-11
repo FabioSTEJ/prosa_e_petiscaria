@@ -1,0 +1,52 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+    <div class="header-garcom">
+        <h2>Mesa {{ mesa.numero }}</h2>
+        <div class="badge-total" style="background: var(--primaria); color: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 10px;">
+            Total: <strong>R$ {{ "%.2f"|format(total) }}</strong>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="lancamento-item" style="background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 1rem; margin-bottom: 10px;">Lançar Produto:</h3>
+        <form action="{{ url_for('lancar_item', mesa_id=mesa.id) }}" method="POST">
+            <div class="input-group">
+                <select name="produto_id" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
+                    <option value="">Selecione o produto...</option>
+                    {% for p in produtos %}
+                        <option value="{{ p.id }}">{{ p.nome }} - R$ {{ p.preco }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group" style="margin-top: 10px; display: flex; gap: 10px;">
+                <input type="number" name="quantidade" value="1" min="1" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                <button type="submit" class="btn-login" style="flex: 2; margin-top: 0; background-color: var(--detalhe);">
+                    <i class="fas fa-plus"></i> LANÇAR
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="lista-itens">
+        <h3 style="font-size: 1rem; margin-bottom: 10px;">Consumo Atual:</h3>
+        {% for item in itens %}
+        <div class="item-card" style="display: flex; justify-content: space-between; background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--detalhe);">
+            <span><strong>{{ item.quantidade }}x</strong> {{ item.item_nome }}</span>
+            <span>R$ {{ "%.2f"|format(item.valor_total) }}</span>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #999;">Nenhum item lançado ainda.</p>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+        <a href="{{ url_for('painel_garcom') }}" class="btn-login" style="background-color: #6c757d; text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> VOLTAR AO MAPA
+        </a>
+    </div>
+</div>
+{% endblock %}

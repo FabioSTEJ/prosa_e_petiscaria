@@ -1,0 +1,25 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+    <div class="header-garcom">
+        <i class="fas fa- exclamation-circle fa-3x" style="color: var(--detalhe); margin-bottom: 15px;"></i>
+        <h2>Mesa {{ mesa.numero }}</h2>
+        <p>Esta mesa está atualmente <strong>Livre</strong>.</p>
+    </div>
+
+    <div class="confirm-box" style="text-align: center; margin-top: 30px;">
+        <p style="font-size: 1.1rem; margin-bottom: 25px;">Deseja iniciar o atendimento para esta mesa?</p>
+        
+        <form action="{{ url_for('abrir_mesa', mesa_id=mesa.id) }}" method="POST">
+            <button type="submit" class="btn-login" style="background-color: #28a745; margin-bottom: 15px;">
+                <i class="fas fa-check"></i> CONFIRMAR ABERTURA
+            </button>
+        </form>
+
+        <a href="{{ url_for('painel_garcom') }}" class="btn-login" style="background-color: #6c757d; text-decoration: none;">
+            <i class="fas fa-times"></i> CANCELAR
+        </a>
+    </div>
+</div>
+{% endblock %}

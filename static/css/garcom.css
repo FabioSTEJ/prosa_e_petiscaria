@@ -1,8 +1,10 @@
-/* Mapa de Mesas Mobile-First */
+/* Mapa de Mesas Mobile-First - Versão Refinada */
 .grid-mesas {
     display: grid;
+    /* Ajustei para 110px como você definiu, fica ótimo no mobile! */
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 15px;
+    padding: 10px; /* Respiro para não colar nas bordas da tela */
 }
 
 .card-mesa {
@@ -16,11 +18,23 @@
     color: white !important;
     font-weight: bold;
     transition: transform 0.1s;
+    /* Sombra leve para destacar os botões */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .card-mesa:active { transform: scale(0.95); }
 
+/* Gradientes que você criou (estão perfeitos!) */
 .disponivel { background: linear-gradient(135deg, #28a745, #218838); }
 .ocupada { background: linear-gradient(135deg, #dc3545, #c82333); }
 
-.mesa-numero { font-size: 1.8rem; }
+.mesa-numero { 
+    font-size: 1.8rem; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Deixa o número mais nítido */
+}
+
+.mesa-status {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+}

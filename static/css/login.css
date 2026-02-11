@@ -1,0 +1,143 @@
+/* static/css/login.css */
+
+/* Container Principal - Centralização */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: var(--bg-fundo);
+}
+
+.login-container {
+    background: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Cabeçalho */
+.login-header i {
+    color: var(--detalhe); /* Laranja/Bronze do seu root */
+    margin-bottom: 1rem;
+}
+
+.login-header h1 {
+    font-size: 1.8rem;
+    color: var(--primaria);
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+}
+
+.login-header p {
+    color: #888;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* Formulário e Inputs */
+.input-group {
+    text-align: left;
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primaria);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.input-group label i {
+    margin-right: 5px;
+    width: 20px;
+    text-align: center;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 16px; /* Essencial para evitar zoom no celular */
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--detalhe);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+}
+
+/* Botão Entrar */
+.btn-login {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    background-color: var(--primaria); /* Azul/Escuro do seu root */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.btn-login:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+/* Mensagens de Erro */
+.flash-messages {
+    margin-top: 1.5rem;
+}
+
+/* Sobrescrevendo a error-msg global para combinar com o layout */
+.error-msg {
+    margin-top: 0 !important;
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+    border-radius: 10px;
+    padding: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 2rem 1.5rem;
+        box-shadow: none;
+        background-color: transparent; /* Se funde ao fundo bege */
+    }
+
+    .login-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .btn-login {
+        padding: 1.2rem; /* Botão maior para o dedo do garçom */
+    }
+}

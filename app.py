@@ -58,7 +58,7 @@ def login():
         user_input = request.form.get('username')
         pwd_input = request.form.get('password')
         
-        # Agora verificamos se o usuário existe E está ativo
+        # verificação de usuario
         usuario = Usuario.query.filter_by(username=user_input, ativo=True).first()
         
         if usuario and usuario.senha == pwd_input:
@@ -85,23 +85,22 @@ def painel_admin():
 def admin_dashboard():
     hoje = datetime.now().date()
     
-    # 1. Vendas Reais do Dia (Soma usando o novo campo valor_total)
+    #  vendas do dia
     vendas_hoje = db.session.query(func.sum(Pedido.valor_total)).filter(
         func.date(Pedido.data) == hoje,
         Pedido.status == 'Pago'
     ).scalar() or 0.0
 
-    # 2. Mesas Ocupadas
+    # mesas ocupadas
     mesas_ativas = Mesa.query.filter_by(status='Ocupada').count()
 
-    # 3. Total de Pedidos do dia
+    # pedidos do dia
     total_pedidos = Pedido.query.filter(func.date(Pedido.data) == hoje).count()
 
-    # 4. Ticket Médio
+    # ticket medio
     ticket_medio = vendas_hoje / total_pedidos if total_pedidos > 0 else 0.0
 
-    # 5. Desempenho Real dos Garçons (Ranking)
-    # Buscamos a soma de vendas agrupada por nome do garçom
+    # desempenho funcionario
     desempenho = db.session.query(
         Usuario.nome_exibicao, 
         func.sum(Pedido.valor_total)
@@ -115,7 +114,7 @@ def admin_dashboard():
         "total_pedidos": total_pedidos,
         "ticket_medio": ticket_medio,
         "data_atual": datetime.now().strftime('%d/%m/%Y'),
-        "mais_vendidos": [], # Lógica de agregação de produtos pode vir depois
+        "mais_vendidos": [],
         "desempenho_garcons": [{"nome": d[0], "total_vendas": d[1]} for d in desempenho]
     }
     return render_template('admin_dashboard.html', **contexto)
@@ -145,6 +144,7 @@ def gerenciar_usuarios():
     usuarios = Usuario.query.all()
     return render_template("admin_usuarios.html", usuarios=usuarios)
 
+# rota cardapio
 @app.route("/admin/cardapio", methods=['GET', 'POST'])
 @login_requerido(cargo_necessario='admin')
 def gerenciar_cardapio():
@@ -167,6 +167,7 @@ def gerenciar_cardapio():
     produtos = Produto.query.order_by(Produto.categoria).all()
     return render_template("admin_cardapio.html", produtos=produtos)
 
+#cardapio delete
 @app.route("/admin/cardapio/deletar/<int:id>")
 @login_requerido(cargo_necessario='admin')
 def deletar_produto(id):
@@ -177,6 +178,7 @@ def deletar_produto(id):
         flash("Produto removido!")
     return redirect(url_for('gerenciar_cardapio'))
 
+# rota mesas adm
 @app.route("/admin/mesas", methods=['GET', 'POST'])
 @login_requerido(cargo_necessario='admin')
 def gerenciar_mesas():
@@ -198,11 +200,75 @@ def gerenciar_mesas():
     mesas = Mesa.query.order_by(Mesa.numero).all()
     return render_template("admin_mesas.html", mesas=mesas)
 
+# painel funcionario
 @app.route("/garcom/painel")
 @login_requerido(cargo_necessario='garcom')
 def painel_garcom():
     mesas = Mesa.query.order_by(Mesa.numero).all()
     return render_template("painel_garcom.html", mesas=mesas)
+
+# rota mesas funcionario
+@app.route("/garcom/mesa/<int:mesa_id>")
+@login_requerido(cargo_necessario='garcom')
+def detalhe_mesa(mesa_id):
+    mesa = Mesa.query.get_or_404(mesa_id)
+    
+    if mesa.status == 'Livre':
+        return render_template("garcom_abrir_mesa.html", mesa=mesa)
+    
+    # Buscamos TODOS os itens pendentes dessa mesa
+    itens_pedido = Pedido.query.filter_by(mesa_id=mesa.id, status='Pendente').all()
+    
+    # Calculamos o total da mesa para exibir na tela
+    total_mesa = sum(item.valor_total for item in itens_pedido)
+    
+    # Buscamos a lista de produtos para o garçom poder escolher o que lançar
+    produtos = Produto.query.filter_by(disponivel=True).all()
+    
+    return render_template("garcom_pedido.html", 
+                           mesa=mesa, 
+                           itens=itens_pedido, 
+                           total=total_mesa,
+                           produtos=produtos)
+
+#rota ocupar mesa
+@app.route("/garcom/mesa/abrir/<int:mesa_id>", methods=['POST'])
+@login_requerido(cargo_necessario='garcom')
+def abrir_mesa(mesa_id):
+    mesa = Mesa.query.get_or_404(mesa_id)
+    if mesa.status == 'Livre':
+        mesa.status = 'Ocupada'
+        db.session.commit() # Apenas muda o status da mesa
+        flash(f"Mesa {mesa.numero} aberta! Agora você pode lançar os itens.")
+    
+    return redirect(url_for('detalhe_mesa', mesa_id=mesa.id))
+
+#rota lançar itens
+
+@app.route("/garcom/mesa/lancar/<int:mesa_id>", methods=['POST'])
+@login_requerido(cargo_necessario='garcom')
+def lancar_item(mesa_id):
+    mesa = Mesa.query.get_or_404(mesa_id)
+    produto_id = request.form.get('produto_id')
+    quantidade = int(request.form.get('quantidade', 1))
+    
+    produto = Produto.query.get(produto_id)
+    if produto:
+        # Agora sim criamos o registro no banco com todos os dados obrigatórios
+        novo_item = Pedido(
+            mesa_id=mesa.id,
+            usuario_id=session['usuario_id'],
+            item_nome=produto.nome,
+            quantidade=quantidade,
+            valor_unitario=produto.preco,
+            valor_total=produto.preco * quantidade,
+            status='Pendente'
+        )
+        db.session.add(novo_item)
+        db.session.commit()
+        flash(f"{quantidade}x {produto.nome} adicionado!")
+    
+    return redirect(url_for('detalhe_mesa', mesa_id=mesa.id))
 
 @app.route("/logout")
 def logout():
