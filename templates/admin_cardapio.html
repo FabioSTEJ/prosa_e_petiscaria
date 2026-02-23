@@ -55,7 +55,7 @@
                     <td class="preco-tag">R$ {{ "%.2f"|format(p.preco) }}</td>
                     <td class="text-center">
                         <div class="acoes-botoes justify-center">
-                            <a href="{{ url_for('deletar_produto', id=p.id) }}" 
+                            <a href="{{ url_for('admin.deletar_produto_view', id=p.id) }}" 
                                class="btn-action btn-delete" 
                                onclick="return confirm('Excluir este item permanentemente?')" 
                                title="Excluir">

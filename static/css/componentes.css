@@ -1,30 +1,58 @@
-/* Botões e Links da Sidebar */
-.sidebar a {
-    padding: 12px 15px;
-    display: block;
-    color: #ecf0f1;
+/* --- COMPONENTE: MAPA DE MESAS --- */
+.grid-mesas {
+    display: grid;
+    /* Adaptação mobile-first */
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 15px;
+    padding: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-mesa {
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
     text-decoration: none;
-    border-radius: 8px;
-    margin-bottom: 5px;
-    transition: 0.2s;
-}
-
-.sidebar a:hover {
-    background: #34495e;
-    color: #f1c40f;
-}
-
-.text-muted {
-    color: #95a5a6 !important;
-    font-size: 0.75rem;
+    color: white !important;
     font-weight: bold;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: none;
 }
 
-/* Alertas Flash */
-.alert {
-    padding: 15px;
-    background: #d1ecf1;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border-left: 5px solid #0c5460;
+.card-mesa:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.card-mesa:active { transform: scale(0.95); }
+
+/* Status */
+.disponivel { background: linear-gradient(135deg, #28a745, #218838); }
+.ocupada { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+.mesa-numero { 
+    font-size: 1.8rem; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.mesa-status {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mesa-consumo-preview {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    background: rgba(0,0,0,0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
 }

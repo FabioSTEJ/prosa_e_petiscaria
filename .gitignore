@@ -5,6 +5,7 @@ venv/
 # Ignorar o Banco de Dados (Segurança!)
 *.db
 instance/
+setup_db.py
 
 # Ignorar arquivos temporários do sistema
 __pycache__/

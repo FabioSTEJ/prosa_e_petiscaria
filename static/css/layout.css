@@ -1,10 +1,19 @@
-/* Estrutura Principal */
+/* --- ESTRUTURA GLOBAL E RESET --- */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #FDF5E6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
 .wrapper {
     display: flex;
     width: 100%;
     min-height: 100vh;
 }
 
+/* --- SIDEBAR PRINCIPAL --- */
 .sidebar {
     width: 260px;
     min-width: 260px;
@@ -12,68 +21,202 @@
     background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
     color: #fff;
     height: 100vh;
-    padding: 30px 20px;
-    position: fixed; /* Mantém a barra fixa */
+    padding: 20px 0;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
     box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-}
-
-#content {
-    /* Ocupa a tela toda, mas empurramos o conteúdo interno com o margin-left */
-    flex: 1;
-    margin-left: 260px; 
-    
-    /* A "FOLGA" QUE VOCÊ QUER: 
-       Aumentei o padding lateral para 80px para dar bastante respiro lateral */
-    padding: 60px 80px; 
-    
-    background-color: transparent; 
-    min-height: 100vh;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
 
-/* Container que centraliza os cards dentro da folga */
-.container-admin {
+.sidebar-header {
+    padding: 10px 20px 15px 20px;
+    text-align: center;
+}
+
+.sidebar-header h3 {
+    color: #fff;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* --- ÁREA DO USUÁRIO --- */
+.user-profile-section {
+    position: relative;
+    margin: 10px 15px 15px 15px;
+}
+
+.user-info-trigger {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info-trigger:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    background: #fff;
+    border: 2px solid #fff;
+}
+
+.user-avatar img {
     width: 100%;
-    max-width: 1100px; /* Limita para não esticar demais em telas ultra-wide */
-    margin: 0 auto;    /* Centraliza o bloco de conteúdo na área bege */
+    height: 100%;
+    object-fit: cover;
 }
 
-/* Responsividade - Ajuste para Tablets */
-@media (max-width: 1100px) {
-    #content {
-        padding: 40px 40px; /* Reduz a folga lateral em telas médias */
-    }
+.user-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Responsividade - Ajuste para Celulares */
+.user-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fff;
+}
+
+.user-role {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.toggle-icon {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* --- DROPDOWN DO USUÁRIO --- */
+.user-dropdown-content {
+    display: none;
+    position: absolute;
+    width: 100%;
+    background-color: #ffffff !important;
+    border-radius: 10px;
+    margin-top: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 1100;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.user-dropdown-content.show {
+    display: block;
+}
+
+.user-dropdown-content a.dropdown-item,
+.user-dropdown-content a.dropdown-item:link,
+.user-dropdown-content a.dropdown-item:visited {
+    padding: 14px 15px !important;
+    font-size: 0.85rem !important;
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none !important;
+    background-color: #ffffff !important;
+    transition: background 0.2s;
+}
+
+.user-dropdown-content a.dropdown-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.user-dropdown-content a.dropdown-item:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Estilo Vermelho para o Botão Sair */
+.user-dropdown-content a.logout-link,
+.user-dropdown-content a.logout-link:visited {
+    color: #e74c3c !important;
+    font-weight: 600;
+}
+
+.user-dropdown-content a.logout-link i {
+    color: #e74c3c !important;
+}
+
+/* --- LINKS DE NAVEGAÇÃO SIDEBAR --- */
+.sidebar-links {
+    flex: 1;
+}
+
+.sidebar a, .sidebar a:link, .sidebar a:visited {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    color: rgba(255, 255, 255, 0.75) !important;
+    text-decoration: none !important;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    gap: 12px;
+}
+
+.sidebar a i {
+    width: 22px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    padding-left: 30px;
+}
+
+.sidebar .text-muted {
+    display: block;
+    padding: 20px 25px 8px 25px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.35) !important;
+    text-transform: uppercase;
+}
+
+.sidebar-divider {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 0 20px 10px 20px;
+}
+
+/* --- ÁREA DE CONTEÚDO --- */
+#content {
+    flex: 1;
+    margin-left: 260px; 
+    padding: 40px 50px; 
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 768px) {
     .sidebar {
         width: 100%;
-        min-width: 100%;
         max-width: 100%;
         height: auto;
-        position: relative; /* No celular, ela fica no topo e não fixa */
+        position: relative;
     }
     #content {
-        width: 100%;
         margin-left: 0;
         padding: 20px;
     }
-    .wrapper {
-        flex-direction: column;
-    }
-}
-
-/* Global Body Reset */
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #FDF5E6; /* Bege Suave */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow-x: hidden;
+    .wrapper { flex-direction: column; }
 }

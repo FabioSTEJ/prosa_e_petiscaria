@@ -1,0 +1,54 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-admin">
+    <h2>Mesa {{ mesa.numero }}</h2>
+    <p>Status: <strong>{{ mesa.status|upper }}</strong></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Preço Unit.</th>
+                {% if session['cargo'] == 'admin' %}
+                    <th>Ações</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ item.preco }}</td>
+                {% if session['cargo'] == 'admin' %}
+                <td>
+                    <a href="{{ url_for('garcom_detalhe.excluir_item', mesa_id=mesa.id, item_id=item.id) }}" 
+                       class="text-danger" onclick="return confirm('Excluir item?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    {% if session['cargo'] == 'admin' %}
+        <div class="alert alert-warning">
+            <h4>Total da Comanda: R$ {{ total }}</h4>
+            <a href="{{ url_for('garcom_detalhe.finalizar_mesa', mesa_id=mesa.id) }}" 
+               class="btn btn-success">Finalizar e Liberar Mesa</a>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary">
+            <p><i class="fas fa-lock"></i> O valor total e a finalização estão disponíveis apenas para o Administrador.</p>
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('garcom_painel.painel') }}" class="btn btn-primary">Voltar ao Mapa</a>
+</div>
+{% endblock %}

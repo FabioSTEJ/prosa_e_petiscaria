@@ -7,31 +7,18 @@
         <p>Olá, <strong>{{ session['nome_real'] }}</strong>! Bom trabalho.</p>
     </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="flash-messages" style="margin-bottom: 20px;">
-            {% for message in messages %}
-              <div class="error-msg" style="background-color: #d4edda; color: #155724; border-color: #c3e6cb;">
-                  <i class="fas fa-check-circle"></i> {{ message }}
-              </div>
-            {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
     <div class="grid-mesas">
         {% for mesa in mesas %}
-        {# Link agora aponta para detalhe_mesa passando o ID correto #}
-        <a href="{{ url_for('detalhe_mesa', mesa_id=mesa.id) }}" 
-           class="card-mesa {{ 'ocupada' if mesa.status != 'Livre' else 'disponivel' }}">
+        {% set classe_status = 'disponivel' if mesa.status == 'Livre' else 'ocupada' %}
+        
+        {# CORREÇÃO: Adicionado o prefixo 'garcom.' ao endpoint #}
+        <a href="{{ url_for('garcom.detalhe_mesa', mesa_id=mesa.id) }}" class="card-mesa {{ classe_status }}">
             <div class="mesa-numero">{{ mesa.numero }}</div>
             <div class="mesa-status">
-                {% if mesa.status == 'Livre' %}
-                    <i class="fas fa-door-open"></i> {{ mesa.status }}
-                {% else %}
-                    <i class="fas fa-user-friends"></i> {{ mesa.status }}
-                {% endif %}
+                <i class="fas {{ 'fa-door-open' if mesa.status == 'Livre' else 'fa-user-friends' }}"></i> 
+                {{ mesa.status }}
             </div>
+            {# Opcional: Mostrar valor rápido se estiver ocupada (como no Admin) #}
         </a>
         {% endfor %}
     </div>

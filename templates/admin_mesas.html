@@ -2,47 +2,36 @@
 
 {% block content %}
 <div class="container-admin">
-    <div class="header-flex">
-        <h2>Monitoramento do Salão 🪑</h2>
-        <span class="badge-total">Total: {{ mesas|length }} Mesas</span>
-    </div>
+    <h2><i class="fas fa-table"></i> Gerenciar Salão</h2>
     
     <div class="card-form">
-        <h3>Configuração de Infraestrutura</h3>
-        <p class="text-muted">Ajuste a quantidade total de mesas físicas disponíveis no estabelecimento.</p>
-        <form method="POST" class="form-inline">
-            <div class="form-group flex-1">
-                <label>Quantidade de Mesas:</label>
-                <input type="number" name="quantidade" value="{{ mesas|length }}" required min="1">
+        <h3><i class="fas fa-tools"></i> Configurar Capacidade</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Total de Mesas:</label>
+                <input type="number" name="quantidade" min="1" max="100" value="{{ mesas|length }}" required>
             </div>
-            <button type="submit" class="btn-success btn-auto">Salvar Alteração</button>
+            <button type="submit" class="btn-success">Atualizar Salão</button>
         </form>
     </div>
 
     <hr class="divisor">
 
-    <h3>Acompanhamento do Salão</h3>
+    <h3><i class="fas fa-map-marked-alt"></i> Mapa em Tempo Real</h3>
+    
     <div class="grid-mesas">
         {% for m in mesas %}
-        <div class="mesa-card {{ 'mesa-ocupada' if m.status == 'Ocupada' else 'mesa-livre' }}">
-            <div class="mesa-header">
-                <span class="mesa-numero">Mesa {{ m.numero }}</span>
-                <span class="mesa-status-indicator"></span>
-            </div>
+        {% set classe_status = 'disponivel' if m.status == 'Livre' else 'ocupada' %}
+        
+        <div class="card-mesa {{ classe_status }}">
+            <div class="mesa-numero">{{ m.numero }}</div>
+            <div class="mesa-status">{{ m.status }}</div>
             
-            <div class="mesa-body">
-                {% if m.status == 'Ocupada' %}
-                    <p class="mesa-info"><strong>Atendente:</strong> {{ m.garcom_atual }}</p>
-                    <p class="mesa-info"><strong>Consumo:</strong> <span class="preco-tag">R$ {{ "%.2f"|format(m.total_acumulado) }}</span></p>
-                    <p class="mesa-time"><i class="far fa-clock"></i> Aberta às {{ m.hora_abertura }}</p>
-                    <a href="#" class="btn-action-view">Auditar Pedidos</a>
-                {% else %}
-                    <div class="mesa-vazia-container">
-                        <i class="fas fa-check-circle"></i>
-                        <p>Livre para uso</p>
-                    </div>
-                {% endif %}
+            {% if m.status == 'Ocupada' %}
+            <div class="mesa-consumo-preview">
+                R$ {{ "%.2f"|format(consumos[m.id]) }}
             </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

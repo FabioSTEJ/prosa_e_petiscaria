@@ -65,14 +65,20 @@
                     </td>
                     <td>
                         <div class="acoes-botoes">
-                            <a href="#" class="btn-action btn-edit" title="Resetar Senha">🔑</a>
+                            <a href="javascript:void(0)" 
+                               onclick="resetarSenha('{{ u.id }}', '{{ u.username }}')" 
+                               class="btn-action btn-edit" title="Resetar Senha">🔑</a>
                             
-                            <a href="#" class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}" title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
+                            <a href="{{ url_for('admin.alternar_status_usuario', usuario_id=u.id) }}" 
+                               class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}" 
+                               title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
                                 {{ '🚫' if u.ativo else '✅' }}
                             </a>
 
-                            {% if u.username != session['username'] %}
-                                <a href="#" class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
+                            {% if u.username != session['username'] and u.username != 'adminprosa' %}
+                                <a href="{{ url_for('admin.excluir_usuario', usuario_id=u.id) }}" 
+                                   onclick="return confirm('Tem certeza que deseja excluir permanentemente este usuário?')"
+                                   class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
                             {% endif %}
                         </div>
                     </td>
@@ -82,4 +88,25 @@
         </table>
     </div>
 </div>
+
+<script>
+function resetarSenha(userId, username) {
+    const novaSenha = prompt("Digite a nova senha para @" + username + ":");
+    if (novaSenha && novaSenha.length > 0) {
+        // Cria um formulário temporário para enviar o POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "/admin/usuarios/senha/" + userId;
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'nova_senha';
+        input.value = novaSenha;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

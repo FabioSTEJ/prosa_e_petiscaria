@@ -4,34 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Prosa & Petiscaria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="login-page">
     <div class="login-container">
         <div class="login-header">
+            <i class="fas fa-utensils fa-3x" style="color: #8b7e74; margin-bottom: 15px;"></i>
             <h1>Prosa & Petiscaria</h1>
             <p>Acesso ao Sistema de Comandas</p>
         </div>
         
-        <form action="/login" method="POST">
+        <form action="{{ url_for('auth.login') }}" method="POST">
             <div class="input-group">
-                <label for="username">Usuário</label>
+                <label for="username"><i class="fas fa-user"></i> Usuário</label>
                 <input type="text" id="username" name="username" placeholder="Digite seu usuário" required>
             </div>
             
             <div class="input-group">
-                <label for="password">Senha</label>
+                <label for="password"><i class="fas fa-lock"></i> Senha</label>
                 <input type="password" id="password" name="password" placeholder="••••••••" required>
             </div>
             
-            <button type="submit" class="btn-login">Entrar</button>
+            <button type="submit" class="btn-login">
+                <span>Entrar</span> <i class="fas fa-sign-in-alt"></i>
+            </button>
         </form>
 
         {% with messages = get_flashed_messages() %}
           {% if messages %}
-            {% for message in messages %}
-              <p class="error-msg">{{ message }}</p>
-            {% endfor %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                  <p class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ message }}</p>
+                {% endfor %}
+            </div>
           {% endif %}
         {% endwith %}
     </div>

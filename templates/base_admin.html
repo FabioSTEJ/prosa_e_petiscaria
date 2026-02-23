@@ -5,8 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prosa & Petiscaria - Painel</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/garcom.css') }}">
 </head>
 
 <body class="admin-body">
@@ -15,64 +20,93 @@
             <div class="sidebar-header">
                 <h3><i class="fas fa-utensils"></i> Prosa & Petiscaria</h3>
             </div>
-            <hr>
 
-            <a href="{{ url_for('painel_admin' if session['cargo'] == 'admin' else 'painel_garcom') }}">
-                <i class="fas fa-home"></i> Início
-            </a>
+            <div class="user-profile-section">
+                <div class="user-info-trigger" onclick="toggleUserMenu()">
+                    <div class="user-avatar">
+                        {% if session['cargo'] == 'admin' %}
+                            <img src="https://cdn-icons-png.flaticon.com/512/2206/2206248.png" alt="Admin">
+                        {% else %}
+                            <img src="https://cdn-icons-png.flaticon.com/512/3461/3461902.png" alt="Garçom">
+                        {% endif %}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ session['nome_real'].split(' ')[0] if session['nome_real'] else 'Usuário' }}</span>
+                        <span class="user-role">{{ session['cargo']|upper }}</span>
+                    </div>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                
+                <div id="userDropdown" class="user-dropdown-content">
+                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout-link">
+                        <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+                    </a>
+                </div>
+            </div>
 
-            {% if session['cargo'] == 'admin' %}
-            <small class="text-muted">ADMINISTRAÇÃO</small>
-            <a href="{{ url_for('gerenciar_usuarios') }}">
-                <i class="fas fa-users"></i> Equipe
-            </a>
-            <a href="{{ url_for('gerenciar_cardapio') }}">
-                <i class="fas fa-hamburger"></i> Cardápio
-            </a>
-            <a href="{{ url_for('gerenciar_mesas') }}">
-                <i class="fas fa-table"></i> Mesas
-            </a>
-            <a href="#">
-                <i class="fas fa-chart-line"></i> Relatórios
-            </a>
-            <a href="#">
-                <i class="fas fa-cog"></i> Configurações
-            </a>
-            {% else %}
-            <small class="text-muted">ATENDIMENTO</small>
-            <a href="{{ url_for('painel_garcom') }}">
-                <i class="fas fa-table"></i> Mapa de Mesas
-            </a>
-            <a href="#">
-                <i class="fas fa-clipboard-list"></i> Meus Pedidos
-            </a>
-            <a href="#">
-                <i class="fas fa-star"></i> Minha Pontuação
-            </a>
-            {% endif %}
+            <hr class="sidebar-divider">
 
-            <div class="sidebar-footer">
-                <hr>
-                <a href="{{ url_for('logout') }}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i> Sair
+            <div class="sidebar-links">
+                <a href="{{ url_for('admin.dashboard_view' if session['cargo'] == 'admin' else 'garcom.home_garcom') }}">
+                    <i class="fas fa-home"></i> <span>Início</span>
                 </a>
+
+                <small class="text-muted">ATENDIMENTO</small>
+                <a href="{{ url_for('garcom.painel_garcom') }}">
+                    <i class="fas fa-map-marked-alt"></i> <span>Mapa de Mesas</span>
+                </a>
+
+                {% if session['cargo'] == 'admin' %}
+                    <hr class="sidebar-divider">
+                    <small class="text-muted">ADMINISTRAÇÃO</small>
+                    <a href="{{ url_for('admin.gerenciar_usuarios_view') }}">
+                        <i class="fas fa-users"></i> <span>Equipe</span>
+                    </a>
+                    <a href="{{ url_for('admin.gerenciar_cardapio_view') }}">
+                        <i class="fas fa-hamburger"></i> <span>Cardápio</span>
+                    </a>
+                    <a href="{{ url_for('admin.gerenciar_mesas_view') }}">
+                        <i class="fas fa-table"></i> <span>Mesas</span>
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-chart-line"></i> <span>Relatórios</span>
+                    </a>
+                {% endif %}
             </div>
         </nav>
 
         <main id="content">
             {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> {{ message }}
-            </div>
-            {% endfor %}
-            {% endif %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
         </main>
     </div>
-</body>
 
+    <script>
+        function toggleUserMenu() {
+            var dropdown = document.getElementById("userDropdown");
+            dropdown.classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.user-profile-section')) {
+                var dropdowns = document.getElementsByClassName("user-dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
 </html>

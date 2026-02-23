@@ -2,50 +2,107 @@
 
 {% block content %}
 <div class="container-mobile">
-    <div class="header-garcom">
-        <h2>Mesa {{ mesa.numero }}</h2>
-        <div class="badge-total" style="background: var(--primaria); color: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 10px;">
-            Total: <strong>R$ {{ "%.2f"|format(total) }}</strong>
+    <div class="header-garcom" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0;">Mesa {{ mesa.numero }}</h2>
+            <p style="margin: 0; color: #666;">Detalhes do Atendimento</p>
+        </div>
+        <span class="badge" style="background-color: #3498db; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem;">
+            {{ mesa.status|upper }}
+        </span>
+    </div>
+
+    <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead style="background-color: #2c3e50; color: white;">
+                <tr>
+                    <th style="padding: 12px;">Item</th>
+                    <th style="padding: 12px; text-align: center;">Qtd</th>
+                    <th style="padding: 12px;">Total</th>
+                    {% if session['cargo'] == 'admin' %}
+                    <th style="padding: 12px; text-align: center;">Ações</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">{{ item.item_nome }}</td>
+                    <td style="padding: 12px; text-align: center;">{{ item.quantidade }}</td>
+                    <td style="padding: 12px;">R$ {{ "%.2f"|format(item.valor_total) }}</td>
+                    {% if session['cargo'] == 'admin' %}
+                    <td style="padding: 12px; text-align: center;">
+                        <a href="{{ url_for('garcom.excluir_item', mesa_id=mesa.id, pedido_id=item.id) }}" 
+                           style="color: #e74c3c; font-size: 1.1rem;"
+                           onclick="return confirm('Deseja realmente remover este item?')">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 20px; text-align: center; color: #999;">Nenhum item lançado ainda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="background: #f8f9fa; border: 2px solid #27ae60; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <span style="display: block; font-size: 0.9rem; color: #666;">Valor Total da Mesa</span>
+                <strong style="font-size: 1.8rem; color: #27ae60;">R$ {{ "%.2f"|format(total) }}</strong>
+            </div>
+            
+            {% if session['cargo'] == 'admin' %}
+            <a href="{{ url_for('garcom.finalizar_mesa', mesa_id=mesa.id) }}" 
+               class="btn-primary" 
+               style="background-color: #27ae60; padding: 12px 25px; border-radius: 8px; text-decoration: none; color: white; font-weight: bold;"
+               onclick="return confirm('Deseja finalizar a conta e liberar a mesa?')">
+                <i class="fas fa-check-circle"></i> Fechar Conta
+            </a>
+            {% else %}
+            <div style="max-width: 250px; font-size: 0.8rem; color: #7f8c8d; font-style: italic;">
+                <i class="fas fa-lock"></i> Somente administradores podem encerrar a conta no sistema.
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <hr>
-
-    <div class="lancamento-item" style="background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h3 style="font-size: 1rem; margin-bottom: 10px;">Lançar Produto:</h3>
-        <form action="{{ url_for('lancar_item', mesa_id=mesa.id) }}" method="POST">
-            <div class="input-group">
-                <select name="produto_id" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
-                    <option value="">Selecione o produto...</option>
-                    {% for p in produtos %}
-                        <option value="{{ p.id }}">{{ p.nome }} - R$ {{ p.preco }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="input-group" style="margin-top: 10px; display: flex; gap: 10px;">
-                <input type="number" name="quantidade" value="1" min="1" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                <button type="submit" class="btn-login" style="flex: 2; margin-top: 0; background-color: var(--detalhe);">
-                    <i class="fas fa-plus"></i> LANÇAR
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div class="lista-itens">
-        <h3 style="font-size: 1rem; margin-bottom: 10px;">Consumo Atual:</h3>
-        {% for item in itens %}
-        <div class="item-card" style="display: flex; justify-content: space-between; background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--detalhe);">
-            <span><strong>{{ item.quantidade }}x</strong> {{ item.item_nome }}</span>
-            <span>R$ {{ "%.2f"|format(item.valor_total) }}</span>
+    <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 25px;">
+        <div style="background: #34495e; color: white; padding: 12px 20px;">
+            <h5 style="margin: 0;"><i class="fas fa-plus-circle"></i> Lançar Novo Item</h5>
         </div>
-        {% else %}
-        <p style="text-align: center; color: #999;">Nenhum item lançado ainda.</p>
-        {% endfor %}
+        <div style="padding: 20px;">
+            <form action="{{ url_for('garcom.lancar_item', mesa_id=mesa.id) }}" method="POST">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #34495e;">Produto</label>
+                    <select name="produto_id" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                        <option value="" selected disabled>Selecione um produto...</option>
+                        {% for p in produtos %}
+                        <option value="{{ p.id }}">{{ p.nome }} - R$ {{ "%.2f"|format(p.preco) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #34495e;">Quantidade</label>
+                        <input type="number" name="quantidade" value="1" min="1" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                    </div>
+                    <button type="submit" style="flex: 1; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        <i class="fas fa-plus"></i> Adicionar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
-        <a href="{{ url_for('painel_garcom') }}" class="btn-login" style="background-color: #6c757d; text-decoration: none;">
-            <i class="fas fa-arrow-left"></i> VOLTAR AO MAPA
+    <div style="text-align: center; margin-bottom: 40px;">
+        <a href="{{ url_for('garcom.painel_garcom') }}" style="color: #7f8c8d; text-decoration: none;">
+            <i class="fas fa-chevron-left"></i> Voltar ao Mapa de Mesas
         </a>
     </div>
 </div>

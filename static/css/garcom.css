@@ -1,40 +1,12 @@
-/* Mapa de Mesas Mobile-First - Versão Refinada */
-.grid-mesas {
-    display: grid;
-    /* Ajustei para 110px como você definiu, fica ótimo no mobile! */
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 15px;
-    padding: 10px; /* Respiro para não colar nas bordas da tela */
-}
-
-.card-mesa {
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 15px;
-    text-decoration: none;
-    color: white !important;
-    font-weight: bold;
-    transition: transform 0.1s;
-    /* Sombra leve para destacar os botões */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.card-mesa:active { transform: scale(0.95); }
-
-/* Gradientes que você criou (estão perfeitos!) */
-.disponivel { background: linear-gradient(135deg, #28a745, #218838); }
-.ocupada { background: linear-gradient(135deg, #dc3545, #c82333); }
-
-.mesa-numero { 
-    font-size: 1.8rem; 
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Deixa o número mais nítido */
-}
-
-.mesa-status {
-    font-size: 0.8rem;
-    opacity: 0.9;
-    text-transform: uppercase;
-}
+.badge-total-consumo { background: var(--primaria); color: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 10px; }
+.card-lancamento { background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.select-produto { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
+.acoes-lancamento { margin-top: 10px; display: flex; gap: 10px; }
+.item-card-consumo { display: flex; justify-content: space-between; background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--detalhe); }
+.btn-lancar { flex: 2; background-color: var(--detalhe); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-voltar { background-color: #6c757d; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+.centralizado { text-align: center; padding: 20px 0; }
+.alerta-icon { color: var(--detalhe); font-size: 3rem; margin-bottom: 15px; }
+.pergunta-abertura { font-size: 1.1rem; margin-bottom: 25px; text-align: center; }
+.btn-confirmar { width: 100%; background-color: #28a745; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; margin-bottom: 15px; cursor: pointer; }
+.confirm-box { display: flex; flex-direction: column; align-items: center; }
