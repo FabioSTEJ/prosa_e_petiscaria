@@ -79,7 +79,15 @@ def finalizar_mesa(mesa_id):
         usuario_abriu = Usuario.query.get(mesa.aberta_por_id)
         nome_abriu = usuario_abriu.nome_exibicao if usuario_abriu else "Sistema"
 
-        # 3. Cria o registro definitivo na tabela Venda antes de limpar os dados
+        # --- MODIFICAÇÃO AQUI: Criar a lista detalhada de produtos ---
+        lista_detalhada = []
+        for item in itens_pendentes:
+            lista_detalhada.append(f"{item.quantidade}x {item.item_nome}")
+        
+        # Juntamos tudo em uma única string separada por vírgula
+        resumo_final = ", ".join(lista_detalhada)
+
+        # 3. Cria o registro definitivo na tabela Venda
         venda_historico = Venda(
             mesa_numero=mesa.numero,
             data_abertura=mesa.data_abertura or datetime.now(),
@@ -87,11 +95,11 @@ def finalizar_mesa(mesa_id):
             valor_total=total_venda,
             aberta_por_nome=nome_abriu,
             fechada_por_id=session.get('usuario_id'),
-            observacoes=f"Finalizada com {len(itens_pendentes)} itens."
+            observacoes=resumo_final  # <--- AGORA SALVA A LISTA REAL
         )
         db.session.add(venda_historico)
 
-        # 4. Atualiza o status dos itens para 'Finalizado' (ou deleta se preferir economizar espaço)
+        # 4. Atualiza o status dos itens para 'Finalizado'
         for item in itens_pendentes:
             item.status = 'Finalizado'
             

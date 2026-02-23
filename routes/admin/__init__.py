@@ -13,11 +13,13 @@ from .usuarios import (
 )
 from .cardapio import gerenciar_cardapio_view, deletar_produto_view
 from .mesas import gerenciar_mesas_view
+from .vendas import historico_vendas_view  # <--- Nova funcionalidade adicionada
 
 # --- REGISTRO DE ROTAS ---
 
-# Dashboard
+# Dashboard e Financeiro
 admin_bp.add_url_rule('/dashboard', view_func=dashboard_view)
+admin_bp.add_url_rule('/vendas', view_func=historico_vendas_view) # <--- Nova rota registrada
 
 # Gerenciamento de Usuários
 admin_bp.add_url_rule('/usuarios', view_func=gerenciar_usuarios_view, methods=['GET', 'POST'])
