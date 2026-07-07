@@ -1,0 +1,39 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-admin">
+    <h2><i class="fas fa-table"></i> Gerenciar Salão</h2>
+    
+    <div class="card-form">
+        <h3><i class="fas fa-tools"></i> Configurar Capacidade</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Total de Mesas:</label>
+                <input type="number" name="quantidade" min="1" max="100" value="{{ mesas|length }}" required>
+            </div>
+            <button type="submit" class="btn-success">Atualizar Salão</button>
+        </form>
+    </div>
+
+    <hr class="divisor">
+
+    <h3><i class="fas fa-map-marked-alt"></i> Mapa em Tempo Real</h3>
+    
+    <div class="grid-mesas">
+        {% for m in mesas %}
+        {% set classe_status = 'disponivel' if m.status == 'Livre' else 'ocupada' %}
+        
+        <div class="card-mesa {{ classe_status }}">
+            <div class="mesa-numero">{{ m.numero }}</div>
+            <div class="mesa-status">{{ m.status }}</div>
+            
+            {% if m.status == 'Ocupada' %}
+            <div class="mesa-consumo-preview">
+                R$ {{ "%.2f"|format(consumos[m.id]) }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "5500:5500"
+    volumes:
+      - db_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY nao definida. Crie um arquivo .env com SECRET_KEY=<valor seguro>}
+    restart: unless-stopped
+
+volumes:
+  db_data:

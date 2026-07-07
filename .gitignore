@@ -1,0 +1,19 @@
+# Ignorar as bibliotecas do Python
+venv/
+.venv/
+
+# Ignorar o Banco de Dados (Segurança!)
+*.db
+*.db.backup
+instance/
+setup_db.py
+
+# Ignorar arquivos temporários do sistema
+__pycache__/
+.vscode/
+.DS_Store
+criar_adm.py
+
+# Variáveis de ambiente (nunca subir para o git)
+.env
+*.tar

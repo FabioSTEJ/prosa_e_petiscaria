@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosa & Petiscaria - Painel</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/garcom.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="admin-body">
+
+    <!-- Topbar mobile + tablet -->
+    <div class="mobile-topbar">
+        <button class="hamburger-btn" id="sidebarToggle" aria-label="Abrir menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="mobile-title">Prosa & Petiscaria</span>
+    </div>
+
+    <!-- Overlay para fechar sidebar no mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="wrapper">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-utensils"></i> Prosa & Petiscaria</h3>
+            </div>
+
+            <div class="user-profile-section">
+                <div class="user-details">
+                    <span class="user-name">{{ session['nome_real'].split(' ')[0] if session['nome_real'] else 'Usuário' }}</span>
+                    <span class="user-role">{{ session['cargo']|upper }}</span>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn-sair-sidebar" title="Sair">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
+
+            <hr class="sidebar-divider">
+
+            {% set ep = request.endpoint %}
+
+            <div class="sidebar-links">
+
+                {# ─── INÍCIO (admin e garçom) ─── #}
+                {% if session['cargo'] != 'cozinha' %}
+                <a href="{{ url_for('admin.dashboard_view' if session['cargo'] == 'admin' else 'garcom.home_garcom') }}"
+                   class="{{ 'active' if ep in ('admin.dashboard_view', 'garcom.home_garcom') else '' }}">
+                    <i class="fas fa-home"></i> <span>Início</span>
+                </a>
+                {% endif %}
+
+                {# ─── ATENDIMENTO (admin e garçom) ─── #}
+                {% if session['cargo'] in ('admin', 'garcom') %}
+                <hr class="sidebar-divider">
+                <small class="sidebar-section-label">ATENDIMENTO</small>
+
+                <a href="{{ url_for('garcom.painel_garcom') }}"
+                   class="{{ 'active' if ep in ('garcom.painel_garcom', 'garcom.detalhe_mesa', 'garcom.abrir_mesa', 'garcom.lancar_item') else '' }}">
+                    <i class="fas fa-map-marked-alt"></i> <span>Mesas</span>
+                </a>
+
+                <a href="{{ url_for('garcom.pedidos_prontos_view') }}"
+                   class="{{ 'active' if ep in ('garcom.pedidos_prontos_view', 'garcom.entregar_pedido') else '' }}">
+                    <i class="fas fa-bell"></i>
+                    <span>Pedidos Prontos</span>
+                    {% if pedidos_prontos_count > 0 %}
+                    <span class="sidebar-badge">{{ pedidos_prontos_count }}</span>
+                    {% endif %}
+                </a>
+                {% endif %}
+
+                {# ─── PRODUÇÃO (admin e cozinha) ─── #}
+                {% if session['cargo'] in ('admin', 'cozinha') %}
+                <hr class="sidebar-divider">
+                <small class="sidebar-section-label">PRODUÇÃO</small>
+
+                <a href="{{ url_for('admin.painel_cozinha') }}"
+                   class="{{ 'active' if ep == 'admin.painel_cozinha' else '' }}">
+                    <i class="fas fa-fire-alt"></i>
+                    <span>Cozinha</span>
+                    {% if pedidos_pendentes_count > 0 %}
+                    <span class="sidebar-badge">{{ pedidos_pendentes_count }}</span>
+                    {% endif %}
+                </a>
+                {% endif %}
+
+                {# ─── ADMINISTRAÇÃO (somente admin) ─── #}
+                {% if session['cargo'] == 'admin' %}
+                <hr class="sidebar-divider">
+                <small class="sidebar-section-label">ADMINISTRAÇÃO</small>
+
+                <a href="{{ url_for('admin.gerenciar_usuarios_view') }}"
+                   class="{{ 'active' if ep == 'admin.gerenciar_usuarios_view' else '' }}">
+                    <i class="fas fa-users"></i> <span>Equipe</span>
+                </a>
+                <a href="{{ url_for('admin.gerenciar_cardapio_view') }}"
+                   class="{{ 'active' if ep == 'admin.gerenciar_cardapio_view' else '' }}">
+                    <i class="fas fa-hamburger"></i> <span>Cardápio</span>
+                </a>
+                <a href="{{ url_for('admin.gerenciar_mesas_view') }}"
+                   class="{{ 'active' if ep == 'admin.gerenciar_mesas_view' else '' }}">
+                    <i class="fas fa-table"></i> <span>Config. Mesas</span>
+                </a>
+                <a href="{{ url_for('admin.historico_vendas_view') }}"
+                   class="{{ 'active' if ep == 'admin.historico_vendas_view' else '' }}">
+                    <i class="fas fa-chart-line"></i> <span>Histórico</span>
+                </a>
+                {% endif %}
+
+            </div>
+        </nav>
+
+        <main id="content">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-info-circle"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        // Sidebar mobile
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggleBtn = document.getElementById('sidebarToggle');
+
+        function openSidebar() {
+            sidebar.classList.add('sidebar-open');
+            overlay.classList.add('show');
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            overlay.classList.remove('show');
+        }
+
+        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) closeSidebar();
+            });
+        });
+
+        // Socket.IO global
+        const socket = io();
+
+        // Atualiza badge de pedidos prontos via Socket.IO
+        socket.on('status_pedido', function(data) {
+            if (data.novo_status === 'Pronto' || data.novo_status === 'Entregue' || data.novo_status === 'Cancelado') {
+                const badge = document.querySelector('.sidebar-badge');
+                if (data.novo_status === 'Pronto') {
+                    // Recarrega para atualizar contagem
+                    const url = new URL(window.location.href);
+                    fetch('/garcom/pedidos-prontos', {method: 'HEAD'}).then(() => {
+                        if (badge) {
+                            const count = parseInt(badge.textContent) + 1;
+                            badge.textContent = count;
+                        } else {
+                            // Recarrega a sidebar via reload da página
+                            // Só recarrega se não for a página de pedidos prontos
+                            if (!window.location.pathname.includes('pedidos-prontos')) {
+                                location.reload();
+                            }
+                        }
+                    }).catch(() => {});
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

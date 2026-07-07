@@ -1,0 +1,99 @@
+{% extends "base_admin.html" %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cozinha.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="kds-container">
+
+    <div class="card-header-destaque">
+        <div class="header-info">
+            <h2>Gestão da Cozinha 👨‍🍳</h2>
+            <p>Controle em tempo real dos pedidos em preparo.</p>
+        </div>
+
+        <div class="badge-status-container">
+            <span class="status-badge badge-ocupada">🕒 Pendente</span>
+            <span class="status-badge" style="background: rgba(243,156,18,0.1); color: #f39c12; border: 1px solid #f39c12;">🔥 Preparo</span>
+            <span class="status-badge badge-livre">✅ Pronto</span>
+        </div>
+    </div>
+
+    <div class="grid-mesas-kds" id="kds-grid">
+        {% for p in pedidos %}
+            {% set classe_status = 'borda-pendente' if p.status == 'Pendente' else ('borda-preparo' if p.status == 'Em Preparo' else 'borda-pronto') %}
+
+            <div class="card-pedido-kds {{ classe_status }}">
+                <div class="kds-header">
+                    <div class="kds-mesa-badge">
+                        <small style="color: #7f8c8d; font-weight: bold;">MESA</small>
+                        <span class="kds-mesa-numero">{{ p.mesa_rel.numero }}</span>
+                    </div>
+                    <div class="kds-timer">
+                        ⏳ Há
+                        <strong>{{ ((now - p.data).total_seconds() / 60)|int }} min</strong>
+                    </div>
+                </div>
+
+                <div class="kds-item-box">
+                    <div class="kds-item-nome">{{ p.quantidade }}x {{ p.item_nome }}</div>
+                    {% if p.observacao %}
+                    <div class="kds-observacao">
+                        <i class="fas fa-comment-alt"></i> {{ p.observacao }}
+                    </div>
+                    {% endif %}
+                    <small>Por: {{ p.atendente.nome_exibicao if p.atendente else '–' }}</small>
+                </div>
+
+                <div class="kds-actions">
+                    {% if p.status == 'Pendente' %}
+                        <a href="{{ url_for('admin.mudar_status', pedido_id=p.id, novo_status='Em Preparo') }}" class="btn-kds btn-iniciar">Iniciar</a>
+                    {% elif p.status == 'Em Preparo' %}
+                        <a href="{{ url_for('admin.mudar_status', pedido_id=p.id, novo_status='Pronto') }}" class="btn-kds btn-concluir">Pronto</a>
+                    {% elif p.status == 'Pronto' %}
+                        <span class="btn-kds btn-aguardando"><i class="fas fa-bell"></i> Aguardando garçom</span>
+                    {% endif %}
+
+                    <a href="{{ url_for('admin.mudar_status', pedido_id=p.id, novo_status='Cancelado') }}"
+                       class="btn-cancelar-kds" title="Cancelar Pedido"
+                       onclick="return confirm('Deseja realmente CANCELAR este item?')">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="kds-empty-state" id="empty-state">
+                <i class="fas fa-check-double" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 15px; display: block;"></i>
+                <h3 style="color: #95a5a6; font-weight: 600;">Tudo em ordem!</h3>
+                <p style="color: #bdc3c7;">Nenhum pedido pendente na cozinha no momento.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Recarrega o KDS quando chega novo pedido ou mudança de status
+    socket.on('novo_pedido', function(data) {
+        mostrarNotificacao('🍽️ Novo pedido: ' + data.quantidade + 'x ' + data.item + ' — Mesa ' + data.mesa);
+        setTimeout(() => location.reload(), 1000);
+    });
+
+    socket.on('status_pedido', function(data) {
+        if (['Entregue', 'Cancelado'].includes(data.novo_status)) {
+            setTimeout(() => location.reload(), 800);
+        }
+    });
+
+    function mostrarNotificacao(texto) {
+        const el = document.createElement('div');
+        el.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+        el.style.cssText = 'top: 70px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15)';
+        el.innerHTML = texto + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+    }
+</script>
+{% endblock %}

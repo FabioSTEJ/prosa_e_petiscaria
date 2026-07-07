@@ -1,0 +1,142 @@
+========================================================
+  PROSA E PETISCARIA — GUIA DE DEPLOY EM PRODUCAO
+========================================================
+
+PRE-REQUISITOS
+--------------
+- Docker instalado na maquina/servidor
+- Docker Compose instalado
+- Porta 5500 liberada no firewall
+
+Para verificar se estao instalados, execute:
+  docker --version
+  docker compose version
+
+
+PASSO 1 — COPIAR O PROJETO PARA O SERVIDOR
+-------------------------------------------
+Copie a pasta do projeto para o servidor (via pendrive, FTP, SCP, etc.).
+Certifique-se de que os seguintes arquivos estejam presentes na raiz:
+
+  Dockerfile
+  docker-compose.yml
+  entrypoint.sh
+  run.py
+  requirements.txt
+  app/
+  scripts/
+
+NAO e necessario copiar:
+  - venv/
+  - .env
+  - comandas.db
+  - __pycache__/
+
+
+PASSO 2 — CONFIGURAR A CHAVE SECRETA
+--------------------------------------
+Crie um arquivo .env na raiz do projeto (baseado no .env.example) e
+defina SECRET_KEY com uma sequencia de caracteres aleatorios e segura.
+O container le essa variavel automaticamente via docker-compose.yml.
+
+  Exemplo (.env):
+    SECRET_KEY=x7Kp!mQ2@vLz93nWdYr6sTuA
+
+Se SECRET_KEY nao estiver definida, a aplicacao falha ao iniciar com
+uma mensagem de erro clara. Nunca use uma chave fixa no codigo.
+
+
+PASSO 3 — CONSTRUIR E SUBIR O CONTAINER
+-----------------------------------------
+Na pasta raiz do projeto, execute:
+
+  docker compose up --build -d
+
+  --build   -> reconstroi a imagem com o codigo atual
+  -d        -> roda em segundo plano (modo daemon)
+
+Na PRIMEIRA vez que rodar, o sistema vai:
+  1. Instalar as dependencias Python
+  2. Criar o banco de dados vazio
+  3. Criar o usuario admin automaticamente
+  4. Registrar que o seed ja foi executado (nao repete nos proximos starts)
+  5. Iniciar o servidor
+
+
+PASSO 4 — VERIFICAR SE ESTA RODANDO
+--------------------------------------
+Execute:
+
+  docker compose ps
+
+Deve aparecer o container com STATUS "Up".
+
+Para ver os logs em tempo real:
+
+  docker compose logs -f
+
+
+PASSO 5 — ACESSAR O SITE
+--------------------------
+Abra o navegador e acesse:
+
+  http://<IP-DO-SERVIDOR>:5500
+
+Se estiver rodando na propria maquina:
+
+  http://localhost:5500
+
+
+PASSO 6 — PRIMEIRO LOGIN DO ADMIN
+------------------------------------
+Na tela de login, use as credenciais iniciais:
+
+  Usuario: admin
+  Senha:   123
+
+O sistema vai exigir a troca de senha no primeiro acesso.
+Escolha uma senha forte e guarde em local seguro.
+
+
+========================================================
+  COMANDOS UTEIS NO DIA A DIA
+========================================================
+
+LIGAR o container (inicio do dia):
+  docker compose start
+
+DESLIGAR o container (fim do dia):
+  docker compose stop
+
+REINICIAR:
+  docker compose restart
+
+VER LOGS:
+  docker compose logs -f
+
+RECRIAR O ADMIN MANUALMENTE (caso tenha sido deletado):
+  docker exec -it prosa_e_petiscaria-web-1 python scripts/seed_admin.py
+  (apos isso, login: admin / 123 e o sistema pede troca de senha)
+
+ATUALIZAR O SITE (nova versao do codigo):
+  docker compose down
+  docker compose up --build -d
+
+
+========================================================
+  OBSERVACOES IMPORTANTES
+========================================================
+
+- O banco de dados fica salvo em um volume Docker chamado "db_data".
+  Ele NAO e apagado ao desligar ou reiniciar o container.
+  So e apagado se voce executar: docker compose down -v  (CUIDADO)
+
+- O arquivo .seeded dentro do volume impede que o admin seja
+  recriado automaticamente a cada start. Se precisar recriar
+  o admin, use o comando manual descrito acima.
+
+- Para acessar de outros dispositivos na mesma rede (celulares,
+  tablets, outros computadores), use o IP local do servidor:
+  http://192.168.x.x:5500
+
+========================================================

@@ -1,0 +1,73 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+
+    <div class="card-header-destaque">
+        <div class="header-info">
+            <h2>Mesas 🍻</h2>
+            <p>Olá, <strong>{{ session['nome_real'] }}</strong>! Bom trabalho.</p>
+        </div>
+        <div class="badge-status-container">
+            <span class="status-badge badge-ocupada">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> Ocupada
+            </span>
+            <span class="status-badge badge-livre">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> Livre
+            </span>
+        </div>
+    </div>
+
+    {% set ocupadas = mesas | selectattr('status', 'equalto', 'Ocupada') | list %}
+    {% set livres   = mesas | selectattr('status', 'equalto', 'Livre')   | list %}
+
+    {% if ocupadas %}
+    <div class="secao-mesas">
+        <h4 class="secao-titulo ocupadas-titulo">
+            <i class="fas fa-user-friends"></i> Ocupadas
+            <span class="secao-count">{{ ocupadas | length }}</span>
+        </h4>
+        <div class="grid-mesas">
+            {% for mesa in ocupadas %}
+            <a href="{{ url_for('garcom.detalhe_mesa', mesa_id=mesa.id) }}" class="card-mesa ocupada">
+
+                {% if mesa.alerta_tipo %}
+                <div class="alerta-pedido-mapa {{ mesa.alerta_tipo }}">
+                    {% if mesa.alerta_tipo == 'pronto' %}
+                        <i class="fas fa-check-circle pulse"></i>
+                    {% elif mesa.alerta_tipo == 'preparo' %}
+                        <i class="fas fa-fire"></i>
+                    {% elif mesa.alerta_tipo == 'pendente' %}
+                        <i class="fas fa-clock"></i>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="mesa-numero">{{ mesa.numero }}</div>
+                <div class="mesa-status"><i class="fas fa-user-friends"></i> Ocupada</div>
+                <div class="mesa-consumo-preview">R$ {{ "%.2f"|format(mesa.total_atual) }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if livres %}
+    <div class="secao-mesas">
+        <h4 class="secao-titulo livres-titulo">
+            <i class="fas fa-door-open"></i> Disponíveis
+            <span class="secao-count">{{ livres | length }}</span>
+        </h4>
+        <div class="grid-mesas">
+            {% for mesa in livres %}
+            <a href="{{ url_for('garcom.detalhe_mesa', mesa_id=mesa.id) }}" class="card-mesa disponivel">
+                <div class="mesa-numero">{{ mesa.numero }}</div>
+                <div class="mesa-status"><i class="fas fa-door-open"></i> Livre</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

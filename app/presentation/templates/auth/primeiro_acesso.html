@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primeiro Acesso - Prosa e Petiscaria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        body { 
+            background-color: #f8f9fa; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        .container-central {
+            max-width: 400px;
+            width: 90%;
+        }
+        .logo-seguranca {
+            font-size: 3.5rem;
+            text-align: center;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-central">
+        <div class="card-cadastro">
+            <span class="logo-seguranca">🔐</span>
+            <h2 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">Segurança da Conta</h2>
+            <p style="text-align: center; color: #7f8c8d; font-size: 0.9rem; margin-bottom: 25px;">
+                Olá, <strong>{{ session['nome_real'] }}</strong>!<br>
+                Identificamos que este é seu primeiro acesso ou sua senha foi resetada. Por favor, escolha uma nova senha.
+            </p>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div style="background-color: #fff5f5; color: #e74c3c; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 0.85rem; border: 1px solid #ffebeb;">
+                      {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label>Nova Senha Pessoal:</label>
+                    <input type="password" name="nova_senha" required placeholder="Digite sua nova senha" minlength="4">
+                </div>
+
+                <div class="form-group">
+                    <label>Confirmar Nova Senha:</label>
+                    <input type="password" name="confirmar_senha" required placeholder="Repita a senha">
+                </div>
+
+                <button type="submit" class="btn-success" style="margin-top: 10px;">
+                    Atualizar e Acessar Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+
+    <div class="card-header-destaque">
+        <div class="header-info">
+            <h2><i class="fas fa-bell"></i> Pedidos Prontos</h2>
+            <p>Itens que saíram da cozinha e aguardam retirada.</p>
+        </div>
+        {% if pedidos %}
+        <div class="badge-status-container">
+            <span class="status-badge badge-pronto-count">
+                {{ pedidos|length }} aguardando
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="lista-prontos">
+        {% for p in pedidos %}
+        <div class="card-pronto">
+            <div class="pronto-info">
+                <div class="pronto-mesa">Mesa {{ p.mesa_rel.numero }}</div>
+                <div class="pronto-item">{{ p.quantidade }}x {{ p.item_nome }}</div>
+                <div class="pronto-tempo">
+                    <i class="fas fa-clock"></i>
+                    {{ ((now - p.data).total_seconds() / 60)|int }} min atrás
+                </div>
+            </div>
+            <a href="{{ url_for('garcom.entregar_pedido', pedido_id=p.id) }}"
+               class="btn-entregar-garcom"
+               onclick="return confirm('Confirmar entrega do item na Mesa {{ p.mesa_rel.numero }}?')">
+                <i class="fas fa-check-circle" style="font-size: 1.4rem;"></i>
+                Entregue
+            </a>
+        </div>
+        {% else %}
+        <div class="estado-vazio">
+            <i class="fas fa-check-double"></i>
+            <h3>Tudo entregue!</h3>
+            <p>Nenhum pedido aguardando retirada no momento.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="text-align: center; margin-top: 25px; margin-bottom: 40px;">
+        <a href="{{ url_for('garcom.painel_garcom') }}" class="btn-voltar">
+            <i class="fas fa-chevron-left"></i> Voltar ao Mapa de Mesas
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Recarrega a lista quando status muda para Pronto, Entregue ou Cancelado
+    socket.on('status_pedido', function(data) {
+        if (['Pronto', 'Entregue', 'Cancelado'].includes(data.novo_status)) {
+            setTimeout(() => location.reload(), 700);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-admin">
+    
+    <div class="card-header-destaque">
+        <div class="header-info">
+            <h2>Gerenciar Equipe 👥</h2>
+            <p>Controle de usuários, níveis de acesso e segurança do sistema.</p>
+        </div>
+    </div>
+
+    <div class="card-form card-cadastro">
+        <h3>Cadastrar Novo Membro</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Nome Completo (Para exibição):</label>
+                <input type="text" name="nome_exibicao" placeholder="Nome do Usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nome de Usuário (Para Login):</label>
+                <input type="text" name="username" placeholder="Nome da Conta" required>
+            </div>
+
+            <div class="form-group">
+                <label>Senha de Acesso:</label>
+                <input type="password" name="password" placeholder="Digite a Senha" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Nível de Acesso:</label>
+                <select name="cargo">
+                    <option value="garcom">Garçom</option>
+                    <option value="cozinha">Cozinha</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-success">Cadastrar Usuário</button>
+        </form>
+    </div>
+
+    <hr class="divisor">
+
+    <div class="card-form card-lista-equipe">
+        <h3>Equipe Cadastrada</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome / Login</th>
+                        <th>Cargo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr class="{{ 'row-inactive' if not u.ativo }}">
+                        <td>
+                            <span class="user-main-name">{{ u.nome_exibicao }}</span><br>
+                            <small class="user-username">@{{ u.username }}</small>
+                        </td>
+                        <td>
+                            <span class="badge {% if u.cargo == 'admin' %}badge-admin{% elif u.cargo == 'cozinha' %}badge-cozinha{% else %}badge-garcom{% endif %}">
+                                {{ u.cargo | capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-indicator {{ 'status-active' if u.ativo else 'status-inactive' }}">
+                                ● {{ 'Ativo' if u.ativo else 'Inativo' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="acoes-botoes">
+                                <a href="javascript:void(0)" 
+                                   onclick="resetarSenha('{{ u.id }}', '{{ u.username }}')" 
+                                   class="btn-action btn-edit" title="Resetar Senha">🔑</a>
+                                
+                                <a href="{{ url_for('admin.alternar_status_usuario', usuario_id=u.id) }}" 
+                                   class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}" 
+                                   title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
+                                    {{ '🚫' if u.ativo else '✅' }}
+                                </a>
+
+                                {% if u.username != session['username'] and u.username != 'adminprosa' %}
+                                    <a href="{{ url_for('admin.excluir_usuario', usuario_id=u.id) }}" 
+                                       onclick="return confirm('Tem certeza que deseja excluir permanentemente este usuário?')"
+                                       class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reset de Senha -->
+<div class="modal fade" id="modalResetSenha" tabindex="-1" aria-labelledby="modalResetTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:14px; overflow:hidden;">
+            <div class="modal-header" style="background:#2c3e50; color:white; border:none;">
+                <h5 class="modal-title" id="modalResetTitulo">
+                    <i class="fas fa-key"></i> Resetar Senha
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="formResetSenha" action="">
+                <div class="modal-body" style="padding:25px;">
+                    <p style="color:#34495e; margin-bottom:5px;">
+                        Definindo nova senha para <strong id="modalNomeUsuario"></strong>.
+                    </p>
+                    <p style="color:#95a5a6; font-size:0.85rem; margin-bottom:20px;">
+                        <i class="fas fa-info-circle"></i>
+                        O usuário será obrigado a criar uma senha própria no próximo login.
+                    </p>
+
+                    <div class="form-group">
+                        <label>Nova senha temporária:</label>
+                        <input type="password" name="nova_senha" id="inputNovaSenha"
+                               placeholder="Mínimo 6 caracteres" required minlength="6"
+                               style="width:100%; padding:12px; border:1.5px solid #ddd; border-radius:8px; font-size:1rem; box-sizing:border-box;">
+                    </div>
+
+                    <div class="form-group" style="margin-top:15px;">
+                        <label>Confirmar senha:</label>
+                        <input type="password" id="inputConfirmarSenha"
+                               placeholder="Repita a senha" required minlength="6"
+                               style="width:100%; padding:12px; border:1.5px solid #ddd; border-radius:8px; font-size:1rem; box-sizing:border-box;">
+                    </div>
+
+                    <div id="erroSenhaModal" style="display:none; color:#e74c3c; font-size:0.85rem; margin-top:10px; padding:8px 12px; background:#fdf3f3; border-radius:6px;">
+                        <i class="fas fa-exclamation-circle"></i> As senhas não coincidem.
+                    </div>
+                </div>
+                <div class="modal-footer" style="border:none; padding:0 25px 20px 25px; gap:10px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" style="background:#e67e22; color:white; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-key"></i> Confirmar Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function resetarSenha(userId, username) {
+    document.getElementById('modalNomeUsuario').textContent = '@' + username;
+    document.getElementById('formResetSenha').action = '/admin/usuarios/senha/' + userId;
+    document.getElementById('inputNovaSenha').value = '';
+    document.getElementById('inputConfirmarSenha').value = '';
+    document.getElementById('erroSenhaModal').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('modalResetSenha')).show();
+    setTimeout(() => document.getElementById('inputNovaSenha').focus(), 300);
+}
+
+document.getElementById('formResetSenha').addEventListener('submit', function(e) {
+    const nova = document.getElementById('inputNovaSenha').value;
+    const confirmar = document.getElementById('inputConfirmarSenha').value;
+    if (nova !== confirmar) {
+        e.preventDefault();
+        document.getElementById('erroSenhaModal').style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

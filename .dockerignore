@@ -1,0 +1,12 @@
+venv/
+.venv/
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.db.backup
+.env
+.vscode/
+.DS_Store
+*.tar
