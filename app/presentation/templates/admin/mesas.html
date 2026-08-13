@@ -22,15 +22,23 @@
     <div class="grid-mesas">
         {% for m in mesas %}
         {% set classe_status = 'disponivel' if m.status == 'Livre' else 'ocupada' %}
-        
-        <div class="card-mesa {{ classe_status }}">
+
+        <div class="card-mesa {{ classe_status }}" style="{{ 'opacity: 0.5; filter: grayscale(1);' if not m.ativa else '' }}">
             <div class="mesa-numero">{{ m.numero }}</div>
-            <div class="mesa-status">{{ m.status }}</div>
-            
+            <div class="mesa-status">{{ m.status if m.ativa else 'Desativada' }}</div>
+
             {% if m.status == 'Ocupada' %}
             <div class="mesa-consumo-preview">
                 R$ {{ "%.2f"|format(consumos[m.id]) }}
             </div>
+            {% endif %}
+
+            {% if m.status != 'Ocupada' %}
+            <a href="{{ url_for('admin.alternar_ativa_mesa', mesa_id=m.id) }}"
+               style="display: block; margin-top: 8px; font-size: 0.75rem; text-decoration: underline; color: inherit;"
+               onclick="return confirm('{{ 'Reativar' if not m.ativa else 'Desativar' }} a Mesa {{ m.numero }}?')">
+                {{ 'Reativar' if not m.ativa else 'Desativar' }}
+            </a>
             {% endif %}
         </div>
         {% endfor %}

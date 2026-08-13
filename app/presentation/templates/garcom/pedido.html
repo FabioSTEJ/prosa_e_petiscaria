@@ -18,17 +18,32 @@
                 <tr>
                     <th style="padding: 12px;">Item</th>
                     <th style="padding: 12px; text-align: center;">Qtd</th>
+                    <th style="padding: 12px; text-align: center;">Status</th>
                     <th style="padding: 12px;">Total</th>
                     {% if session['cargo'] == 'admin' %}
                     <th style="padding: 12px; text-align: center;">Ações</th>
                     {% endif %}
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tabela-itens-pedido">
                 {% for item in itens %}
+                {% set cor_status = {
+                    'Pendente': '#f39c12', 'Em Preparo': '#e67e22', 'Pronto': '#27ae60',
+                    'Entregue': '#3498db', 'Cancelado': '#e74c3c',
+                }.get(item.status, '#95a5a6') %}
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px;">{{ item.item_nome }}</td>
+                    <td style="padding: 12px;">
+                        {{ item.item_nome }}
+                        {% if item.observacao %}
+                        <div style="font-size: 0.8rem; color: #e67e22;"><i class="fas fa-comment-alt"></i> {{ item.observacao }}</div>
+                        {% endif %}
+                    </td>
                     <td style="padding: 12px; text-align: center;">{{ item.quantidade }}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span class="status-badge" style="background: {{ cor_status }}1a; color: {{ cor_status }}; border-color: {{ cor_status }}4d;">
+                            {{ item.status }}
+                        </span>
+                    </td>
                     <td style="padding: 12px;">R$ {{ "%.2f"|format(item.valor_total) }}</td>
                     {% if session['cargo'] == 'admin' %}
                     <td style="padding: 12px; text-align: center;">
@@ -42,7 +57,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" style="padding: 20px; text-align: center; color: #999;">Nenhum item lançado ainda.</td>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #999;">Nenhum item lançado ainda.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -115,4 +130,22 @@
         </a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Atualiza a tela sozinha quando um item dessa mesa muda de status na
+    // cozinha, pra o garçom responder o cliente sem precisar ir perguntar.
+    const numeroDestaMesa = "{{ mesa.numero }}";
+    socket.on('status_pedido', function(data) {
+        if (data.mesa === numeroDestaMesa) {
+            setTimeout(() => location.reload(), 800);
+        }
+    });
+    socket.on('novo_pedido', function(data) {
+        if (data.mesa === numeroDestaMesa) {
+            setTimeout(() => location.reload(), 800);
+        }
+    });
+</script>
 {% endblock %}

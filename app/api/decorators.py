@@ -10,7 +10,10 @@ def login_requerido(cargo_necessario=None):
             if 'usuario_id' not in session:
                 return redirect(url_for('auth.login'))
             usuario = Usuario.query.get(session['usuario_id'])
-            if usuario and usuario.primeiro_acesso and request.endpoint != 'auth.primeiro_acesso':
+            if usuario is None:
+                session.clear()
+                return redirect(url_for('auth.login'))
+            if usuario.primeiro_acesso and request.endpoint != 'auth.primeiro_acesso':
                 return redirect(url_for('auth.primeiro_acesso'))
             if cargo_necessario:
                 if session.get('cargo') != 'admin' and session.get('cargo') != cargo_necessario:

@@ -8,6 +8,8 @@ class MesaService:
     def abrir(mesa_id: int, usuario_id: int) -> tuple:
         """Retorna (mesa, foi_aberta). foi_aberta é False se já estava ocupada."""
         mesa = Mesa.query.get_or_404(mesa_id)
+        if not mesa.ativa:
+            raise ValueError(f"Mesa {mesa.numero} está desativada e não pode ser aberta.")
         if mesa.status != 'Livre':
             return mesa, False
         mesa.status = 'Ocupada'
@@ -27,6 +29,13 @@ class MesaService:
             Pedido.status != 'Finalizado',
             Pedido.data >= mesa.data_abertura,
         ).all()
+
+        nao_entregues = [i for i in itens if i.status != 'Entregue']
+        if nao_entregues:
+            raise ValueError(
+                f"Não é possível fechar a mesa: {len(nao_entregues)} item(ns) ainda "
+                "não foram entregues ao cliente."
+            )
 
         total = 0.0
         if itens:
@@ -53,7 +62,20 @@ class MesaService:
         return {'mesa_numero': mesa_numero, 'total': total}
 
     @staticmethod
+    def alternar_ativa(mesa_id: int) -> bool:
+        """Ativa/desativa uma mesa específica (ex.: quebrada, em manutenção),
+        sem alterar a numeração nem o total de mesas do salão."""
+        mesa = Mesa.query.get_or_404(mesa_id)
+        if mesa.status == 'Ocupada':
+            raise ValueError(f"Mesa {mesa.numero} está ocupada e não pode ser desativada.")
+        mesa.ativa = not mesa.ativa
+        db.session.commit()
+        return mesa.ativa
+
+    @staticmethod
     def ajustar_salao(nova_quantidade: int) -> str:
+        if nova_quantidade < 0:
+            raise ValueError("Quantidade de mesas não pode ser negativa.")
         mesas_atuais = Mesa.query.all()
         total_atual = len(mesas_atuais)
         if nova_quantidade > total_atual:

@@ -19,7 +19,8 @@
     </div>
 
     {% set ocupadas = mesas | selectattr('status', 'equalto', 'Ocupada') | list %}
-    {% set livres   = mesas | selectattr('status', 'equalto', 'Livre')   | list %}
+    {% set livres   = mesas | selectattr('status', 'equalto', 'Livre') | selectattr('ativa') | list %}
+    {% set indisponiveis = mesas | selectattr('status', 'equalto', 'Livre') | rejectattr('ativa') | list %}
 
     {% if ocupadas %}
     <div class="secao-mesas">
@@ -64,6 +65,23 @@
                 <div class="mesa-numero">{{ mesa.numero }}</div>
                 <div class="mesa-status"><i class="fas fa-door-open"></i> Livre</div>
             </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if indisponiveis %}
+    <div class="secao-mesas">
+        <h4 class="secao-titulo" style="color: #95a5a6;">
+            <i class="fas fa-tools"></i> Indisponíveis
+            <span class="secao-count">{{ indisponiveis | length }}</span>
+        </h4>
+        <div class="grid-mesas">
+            {% for mesa in indisponiveis %}
+            <div class="card-mesa" style="opacity: 0.5; cursor: not-allowed; filter: grayscale(1);" title="Mesa desativada pelo administrador">
+                <div class="mesa-numero">{{ mesa.numero }}</div>
+                <div class="mesa-status"><i class="fas fa-tools"></i> Em manutenção</div>
+            </div>
             {% endfor %}
         </div>
     </div>

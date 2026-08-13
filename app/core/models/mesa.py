@@ -6,6 +6,7 @@ class Mesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(10), unique=True, nullable=False)
     status = db.Column(db.String(20), default='Livre')
+    ativa = db.Column(db.Boolean, default=True, nullable=False)
     data_abertura = db.Column(db.DateTime, nullable=True)
     aberta_por_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
 

@@ -1,9 +1,10 @@
 from flask import Flask, redirect, url_for, session
 from dotenv import load_dotenv
-from app.infrastructure.extensions import db, socketio
-from app.infrastructure.config import DevelopmentConfig
 
 load_dotenv()
+
+from app.infrastructure.extensions import db, socketio
+from app.infrastructure.config import DevelopmentConfig
 
 
 def create_app(config_class=DevelopmentConfig):

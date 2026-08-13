@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
 from app.api.decorators import login_requerido
 from app.core.models import Usuario, Produto, Mesa, Pedido
+from app.infrastructure.extensions import db
 from app.core.services.auth_service import AuthService
 from app.core.services.cardapio_service import CardapioService
 from app.core.services.mesa_service import MesaService
@@ -29,7 +30,7 @@ def painel_cozinha():
     return render_template('admin/cozinha.html', pedidos=pedidos_ativos, now=datetime.now())
 
 
-@login_requerido(cargo_necessario='admin')
+@login_requerido(cargo_necessario='cozinha')
 def mudar_status(pedido_id, novo_status):
     try:
         pedido = PedidoService.mudar_status(pedido_id, novo_status)
@@ -54,6 +55,7 @@ def gerenciar_usuarios_view():
             )
             flash(f"Usuário {request.form.get('nome_exibicao')} cadastrado com sucesso!")
         except Exception:
+            db.session.rollback()
             flash("Erro ao cadastrar: Usuário já existe.")
         return redirect(url_for('admin.gerenciar_usuarios_view'))
     return render_template("admin/usuarios.html", usuarios=Usuario.query.all())
@@ -62,7 +64,7 @@ def gerenciar_usuarios_view():
 @login_requerido(cargo_necessario='admin')
 def excluir_usuario(usuario_id):
     usuario = Usuario.query.get_or_404(usuario_id)
-    if usuario.username == 'adminprosa':
+    if usuario.username == 'admin':
         flash("Ação negada: Não é possível excluir o administrador principal.")
         return redirect(url_for('admin.gerenciar_usuarios_view'))
     AuthService.excluir_usuario(usuario)
@@ -73,7 +75,7 @@ def excluir_usuario(usuario_id):
 @login_requerido(cargo_necessario='admin')
 def alternar_status_usuario(usuario_id):
     usuario = Usuario.query.get_or_404(usuario_id)
-    if usuario.username == 'adminprosa':
+    if usuario.username == 'admin':
         flash("Ação negada: O administrador principal não pode ser desativado.")
         return redirect(url_for('admin.gerenciar_usuarios_view'))
     ativo = AuthService.alternar_status(usuario_id)
@@ -142,3 +144,14 @@ def gerenciar_mesas_view():
     mesas = Mesa.query.order_by(Mesa.numero).all()
     consumos = {m.id: m.calcular_total() for m in mesas}
     return render_template("admin/mesas.html", mesas=mesas, consumos=consumos)
+
+
+@login_requerido(cargo_necessario='admin')
+def alternar_ativa_mesa(mesa_id):
+    try:
+        ativa = MesaService.alternar_ativa(mesa_id)
+        mesa = Mesa.query.get(mesa_id)
+        flash(f"Mesa {mesa.numero} {'ativada' if ativa else 'desativada'}.")
+    except ValueError as e:
+        flash(str(e), "danger")
+    return redirect(url_for('admin.gerenciar_mesas_view'))

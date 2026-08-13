@@ -52,20 +52,27 @@ def detalhe_mesa(mesa_id):
 
 @login_requerido(cargo_necessario='garcom')
 def abrir_mesa(mesa_id):
-    mesa, foi_aberta = MesaService.abrir(mesa_id, session.get('usuario_id'))
-    if foi_aberta:
-        flash(f"Mesa {mesa.numero} aberta com sucesso!")
-    return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa.id))
+    try:
+        mesa, foi_aberta = MesaService.abrir(mesa_id, session.get('usuario_id'))
+        if foi_aberta:
+            flash(f"Mesa {mesa.numero} aberta com sucesso!")
+        return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa.id))
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for('garcom.painel_garcom'))
 
 
 @login_requerido(cargo_necessario='garcom')
 def lancar_item(mesa_id):
     if request.method == 'POST':
         produto_id = request.form.get('produto_id')
-        quantidade = int(request.form.get('quantidade', 1))
         observacao = request.form.get('observacao', '')
-        pedido = PedidoService.lancar(mesa_id, produto_id, quantidade, session.get('usuario_id'), observacao)
-        flash(f"{pedido.item_nome} adicionado!")
+        try:
+            quantidade = int(request.form.get('quantidade', 1))
+            pedido = PedidoService.lancar(mesa_id, produto_id, quantidade, session.get('usuario_id'), observacao)
+            flash(f"{pedido.item_nome} adicionado!")
+        except ValueError as e:
+            flash(str(e) or "Quantidade inválida.", "danger")
     return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa_id))
 
 
@@ -78,12 +85,16 @@ def excluir_item(mesa_id, pedido_id):
 
 @login_requerido(cargo_necessario='admin')
 def finalizar_mesa(mesa_id):
-    resultado = MesaService.finalizar(mesa_id, session.get('usuario_id'))
-    if resultado['total'] > 0:
-        flash(f"Mesa {resultado['mesa_numero']} fechada! Total: R$ {resultado['total']:.2f}")
-    else:
-        flash(f"Mesa {resultado['mesa_numero']} estava vazia.")
-    return redirect(url_for('garcom.painel_garcom'))
+    try:
+        resultado = MesaService.finalizar(mesa_id, session.get('usuario_id'))
+        if resultado['total'] > 0:
+            flash(f"Mesa {resultado['mesa_numero']} fechada! Total: R$ {resultado['total']:.2f}")
+        else:
+            flash(f"Mesa {resultado['mesa_numero']} estava vazia.")
+        return redirect(url_for('garcom.painel_garcom'))
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa_id))
 
 
 @login_requerido(cargo_necessario='garcom')
@@ -94,6 +105,9 @@ def pedidos_prontos_view():
 
 @login_requerido(cargo_necessario='garcom')
 def entregar_pedido(pedido_id):
-    PedidoService.mudar_status(pedido_id, 'Entregue')
-    flash("Item marcado como entregue!")
+    try:
+        PedidoService.mudar_status(pedido_id, 'Entregue')
+        flash("Item marcado como entregue!")
+    except ValueError as e:
+        flash(str(e), "danger")
     return redirect(url_for('garcom.pedidos_prontos_view'))

@@ -5,6 +5,11 @@ from app.infrastructure.extensions import db
 class CardapioService:
     @staticmethod
     def adicionar(nome: str, preco: float, categoria: str) -> Produto:
+        nome = (nome or '').strip()
+        if not nome:
+            raise ValueError("Nome do produto não pode ser vazio.")
+        if preco <= 0:
+            raise ValueError("Preço deve ser maior que zero.")
         produto = Produto(nome=nome, preco=preco, categoria=categoria)
         db.session.add(produto)
         db.session.commit()
@@ -12,6 +17,11 @@ class CardapioService:
 
     @staticmethod
     def atualizar(produto_id: int, nome: str, preco: float, categoria: str) -> Produto:
+        nome = (nome or '').strip()
+        if not nome:
+            raise ValueError("Nome do produto não pode ser vazio.")
+        if preco <= 0:
+            raise ValueError("Preço deve ser maior que zero.")
         produto = Produto.query.get_or_404(produto_id)
         produto.nome = nome
         produto.preco = preco

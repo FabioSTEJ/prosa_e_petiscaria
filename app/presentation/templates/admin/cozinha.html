@@ -77,9 +77,34 @@
 <script>
     // Recarrega o KDS quando chega novo pedido ou mudança de status
     socket.on('novo_pedido', function(data) {
+        tocarAlertaNovoPedido();
         mostrarNotificacao('🍽️ Novo pedido: ' + data.quantidade + 'x ' + data.item + ' — Mesa ' + data.mesa);
         setTimeout(() => location.reload(), 1000);
     });
+
+    // Bipe curto (Web Audio API, sem depender de arquivo de áudio externo) para
+    // chamar atenção da cozinha mesmo quando ninguém está olhando pra tela.
+    function tocarAlertaNovoPedido() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioCtx();
+            [0, 0.18].forEach((atraso) => {
+                const osc = ctx.createOscillator();
+                const ganho = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 880;
+                ganho.gain.setValueAtTime(0.2, ctx.currentTime + atraso);
+                ganho.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + atraso + 0.15);
+                osc.connect(ganho).connect(ctx.destination);
+                osc.start(ctx.currentTime + atraso);
+                osc.stop(ctx.currentTime + atraso + 0.15);
+            });
+        } catch (erro) {
+            // Navegador sem suporte a Web Audio API, ou bloqueou autoplay
+            // antes de qualquer interação do usuário — falha silenciosamente,
+            // a notificação visual já cobre o alerta.
+        }
+    }
 
     socket.on('status_pedido', function(data) {
         if (['Entregue', 'Cancelado'].includes(data.novo_status)) {
