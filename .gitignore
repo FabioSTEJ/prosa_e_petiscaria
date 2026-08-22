@@ -4,7 +4,7 @@ venv/
 
 # Ignorar o Banco de Dados (Segurança!)
 *.db
-*.db.backup
+*.db.backup*
 instance/
 setup_db.py
 
@@ -17,3 +17,24 @@ criar_adm.py
 # Variáveis de ambiente (nunca subir para o git)
 .env
 *.tar
+
+# Artefatos de teste
+.coverage
+.pytest_cache/
+tests/__pycache__/
+
+# Permissoes/configuracoes locais de sessao do Claude Code (nao e politica do time)
+.claude/settings.json
+.claude/settings.local.json
+
+# Ferramentas de desenvolvimento (nao fazem parte do site em producao)
+.claude/agents/
+.github/
+tests/
+requirements-dev.txt
+pytest.ini
+scripts/run_tests.ps1
+scripts/seed_demo.py
+
+# Backup local da versao anterior a reestruturacao (so' nesta maquina)
+_backup_versao_antiga/

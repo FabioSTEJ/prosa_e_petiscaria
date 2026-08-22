@@ -14,7 +14,7 @@ import os
 import sys
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'comandas.db')
-BACKUP_PATH = DB_PATH + '.backup'
+BACKUP_PATH = DB_PATH + '.backup.migrar_mesa_ativa'
 
 
 def main():

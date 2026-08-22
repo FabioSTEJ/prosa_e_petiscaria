@@ -1,0 +1,71 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container-mobile">
+
+    <div class="kds-header-page">
+        <div class="header-info">
+            {% if mesas_grupo|length > 1 %}
+            <h2>Mesas {{ mesas_grupo|map(attribute='numero')|join(' + ') }}</h2>
+            <p class="kds-subtitulo"><i class="fas fa-link"></i> Mesas unidas · {{ comandas|length }} comanda(s) aberta(s)</p>
+            {% else %}
+            <h2>Mesa {{ mesa.numero }}</h2>
+            <p class="kds-subtitulo">{{ comandas|length }} comanda(s) aberta(s)</p>
+            {% endif %}
+        </div>
+
+        <div class="kds-header-acoes">
+            <span class="status-badge {{ 'badge-ocupada' if mesa.status == 'Ocupada' else 'badge-livre' }}">
+                {{ mesa.status }}
+            </span>
+        </div>
+    </div>
+
+    <div class="card-form">
+        <h4 class="secao-titulo comandas-titulo">
+            <i class="fas fa-clipboard-list"></i> Comandas Abertas
+            <span class="secao-count">{{ comandas|length }}</span>
+        </h4>
+
+        <div class="lista-comandas-mesa">
+            {% for comanda in comandas %}
+            <a href="{{ url_for('garcom.detalhe_comanda', comanda_id=comanda.id) }}" class="card-comanda-mesa">
+                <div class="comanda-mesa-info">
+                    <strong class="comanda-mesa-nome"><i class="fas fa-clipboard-list"></i> {{ comanda.nome }}</strong>
+                    <div class="comanda-mesa-meta">
+                        <i class="fas fa-user"></i> {{ comanda.aberta_por.nome_exibicao if comanda.aberta_por else '–' }}
+                        &nbsp;·&nbsp;
+                        <i class="fas fa-clock"></i> {{ comanda.data_abertura.strftime('%H:%M') }}
+                        {% if mesas_grupo|length > 1 %}
+                        &nbsp;·&nbsp; <i class="fas fa-door-open"></i> Mesa {{ comanda.mesa_rel.numero }}
+                        {% endif %}
+                    </div>
+                </div>
+                <strong class="comanda-mesa-total">R$ {{ "%.2f"|format(comanda.calcular_total()) }}</strong>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 25px;">
+        <div style="background: #34495e; color: white; padding: 10px 16px;">
+            <h5 style="margin: 0; font-size: 0.95rem;"><i class="fas fa-plus-circle"></i> Abrir Mais Uma Comanda</h5>
+        </div>
+        <div style="padding: 16px;">
+            <form action="{{ url_for('garcom.abrir_comanda', mesa_id=mesa.id) }}" method="POST" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input type="text" name="nome" placeholder="Nome da comanda (opcional)" class="input-busca-rapida"
+                       style="flex: 1; min-width: 180px; padding: 12px; border-radius: 8px; box-sizing: border-box;">
+                <button type="submit" class="btn-cheio" style="padding: 12px 20px; background-color: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    <i class="fas fa-plus"></i> Nova Comanda
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+        <a href="{{ url_for('garcom.painel_garcom') }}" class="btn-voltar">
+            <i class="fas fa-chevron-left"></i> Voltar ao Mapa de Mesas
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -2,49 +2,116 @@
 
 {% block content %}
 <div class="container-admin">
-    
-    <div class="card-header-destaque">
+
+    {% set membros_ativos = usuarios | selectattr('ativo') | sort(attribute='cargo') | list %}
+    {% set membros_inativos = usuarios | rejectattr('ativo') | list %}
+
+    <div class="kds-header-page card-header-com-abas">
         <div class="header-info">
             <h2>Gerenciar Equipe 👥</h2>
             <p>Controle de usuários, níveis de acesso e segurança do sistema.</p>
         </div>
+
+        <div class="tabs-segmentadas" role="tablist">
+            <button type="button" id="tab-btn-ativos" class="tab-segmento tab-segmento-ativa" onclick="mudarAbaEquipe('ativos')" role="tab" aria-selected="true">
+                <i class="fas fa-users"></i> Equipe Ativa <span class="tab-segmento-contador">{{ membros_ativos | length }}</span>
+            </button>
+            <button type="button" id="tab-btn-inativos" class="tab-segmento" onclick="mudarAbaEquipe('inativos')" role="tab" aria-selected="false">
+                <i class="fas fa-user-slash"></i> Equipe Inativa <span class="tab-segmento-contador">{{ membros_inativos | length }}</span>
+            </button>
+            <button type="button" id="tab-btn-cadastro" class="tab-segmento" onclick="mudarAbaEquipe('cadastro')" role="tab" aria-selected="false">
+                <i class="fas fa-user-plus"></i> Cadastrar Membro
+            </button>
+        </div>
     </div>
 
-    <div class="card-form card-cadastro">
-        <h3>Cadastrar Novo Membro</h3>
-        <form method="POST">
-            <div class="form-group">
-                <label>Nome Completo (Para exibição):</label>
-                <input type="text" name="nome_exibicao" placeholder="Nome do Usuario" required>
-            </div>
-
-            <div class="form-group">
-                <label>Nome de Usuário (Para Login):</label>
-                <input type="text" name="username" placeholder="Nome da Conta" required>
-            </div>
-
-            <div class="form-group">
-                <label>Senha de Acesso:</label>
-                <input type="password" name="password" placeholder="Digite a Senha" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Nível de Acesso:</label>
-                <select name="cargo">
-                    <option value="garcom">Garçom</option>
-                    <option value="cozinha">Cozinha</option>
-                    <option value="admin">Administrador</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="btn-success">Cadastrar Usuário</button>
-        </form>
-    </div>
-
-    <hr class="divisor">
-
+    <div id="aba-equipe-ativos">
     <div class="card-form card-lista-equipe">
-        <h3>Equipe Cadastrada</h3>
+        <h3><i class="fas fa-users"></i> Equipe Cadastrada</h3>
+
+        {% if membros_ativos %}
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;">
+            <input type="text" id="busca_membro" class="input-busca-rapida" placeholder="🔍 Buscar por nome ou usuário..."
+                   style="flex: 2; min-width: 180px; padding: 10px 14px; border-radius: 8px;">
+        </div>
+        {% endif %}
+
+        <div id="lista-membros-ativos">
+            {% for cargo, membros in membros_ativos | groupby('cargo') %}
+            <div class="grupo-cargo-equipe" data-cargo="{{ cargo }}" style="margin-bottom: 20px;">
+                <h4 style="color: #7f8c8d; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; border-bottom: 2px solid #f0f0f0; padding-bottom: 6px;">
+                    {{ cargo | capitalize }} <span style="font-weight: normal; color: #bbb;">({{ membros | length }})</span>
+                </h4>
+                <div class="table-responsive">
+                    <table class="table" style="table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 35%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                            <col style="width: 25%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Nome / Login</th>
+                                <th>Cargo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in membros %}
+                            <tr class="linha-membro-equipe {{ 'row-inactive' if not u.ativo }}" data-nome="{{ u.nome_exibicao|lower }}" data-username="{{ u.username|lower }}">
+                                <td>
+                                    <span class="user-main-name">{{ u.nome_exibicao }}</span><br>
+                                    <small class="user-username">@{{ u.username }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge {% if u.cargo == 'admin' %}badge-admin{% elif u.cargo == 'cozinha' %}badge-cozinha{% else %}badge-garcom{% endif %}">
+                                        {{ u.cargo | capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-indicator {{ 'status-active' if u.ativo else 'status-inactive' }}">
+                                        ● {{ 'Ativo' if u.ativo else 'Inativo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="acoes-botoes">
+                                        <a href="javascript:void(0)"
+                                           onclick="resetarSenha('{{ u.id }}', '{{ u.username }}')"
+                                           class="btn-action btn-edit" title="Resetar Senha">🔑</a>
+
+                                        <a href="{{ url_for('admin.alternar_status_usuario', usuario_id=u.id) }}"
+                                           class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}"
+                                           title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
+                                            {{ '🚫' if u.ativo else '✅' }}
+                                        </a>
+
+                                        {% if u.username != session['username'] and u.username != 'adminprosa' %}
+                                            <a href="{{ url_for('admin.excluir_usuario', usuario_id=u.id) }}"
+                                               onclick="return confirm('Tem certeza que deseja excluir permanentemente este usuário?')"
+                                               class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <p style="text-align:center; color:#999; padding:30px;">Nenhum membro ativo na equipe.</p>
+            {% endfor %}
+        </div>
+        <p id="msg_sem_resultado_equipe" style="display:none; text-align:center; color:#999; padding:20px;">Nenhum membro encontrado pra essa busca.</p>
+    </div>
+    </div>
+
+    <div id="aba-equipe-inativos" style="display: none;">
+    <div class="card-form" style="border: 1px solid #f0f0f0; opacity: 0.85;">
+        <h3 style="color:#7f8c8d;"><i class="fas fa-user-slash"></i> Equipe Inativa</h3>
+        {% if membros_inativos %}
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -56,7 +123,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for u in usuarios %}
+                    {% for u in membros_inativos %}
                     <tr class="{{ 'row-inactive' if not u.ativo }}">
                         <td>
                             <span class="user-main-name">{{ u.nome_exibicao }}</span><br>
@@ -74,21 +141,11 @@
                         </td>
                         <td>
                             <div class="acoes-botoes">
-                                <a href="javascript:void(0)" 
-                                   onclick="resetarSenha('{{ u.id }}', '{{ u.username }}')" 
-                                   class="btn-action btn-edit" title="Resetar Senha">🔑</a>
-                                
-                                <a href="{{ url_for('admin.alternar_status_usuario', usuario_id=u.id) }}" 
-                                   class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}" 
+                                <a href="{{ url_for('admin.alternar_status_usuario', usuario_id=u.id) }}"
+                                   class="btn-action {{ 'btn-warning' if u.ativo else 'btn-success-small' }}"
                                    title="{{ 'Desativar' if u.ativo else 'Ativar' }}">
                                     {{ '🚫' if u.ativo else '✅' }}
                                 </a>
-
-                                {% if u.username != session['username'] and u.username != 'adminprosa' %}
-                                    <a href="{{ url_for('admin.excluir_usuario', usuario_id=u.id) }}" 
-                                       onclick="return confirm('Tem certeza que deseja excluir permanentemente este usuário?')"
-                                       class="btn-action btn-delete" title="Excluir Permanentemente">🗑️</a>
-                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -96,7 +153,45 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p style="text-align:center; color:#999; padding:30px;">Nenhum membro inativo.</p>
+        {% endif %}
     </div>
+    </div>
+
+    <div id="aba-equipe-cadastro" style="display: none;">
+    <div class="card-form card-cadastro">
+        <h3>Cadastrar Novo Membro</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Nome Completo (Para exibição):</label>
+                <input type="text" name="nome_exibicao" placeholder="Nome do Usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nome de Usuário (Para Login):</label>
+                <input type="text" name="username" placeholder="Nome da Conta" required>
+            </div>
+
+            <div class="form-group">
+                <label>Senha de Acesso:</label>
+                <input type="password" name="password" placeholder="Digite a Senha" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nível de Acesso:</label>
+                <select name="cargo">
+                    <option value="garcom">Garçom</option>
+                    <option value="cozinha">Cozinha</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-success">Cadastrar Usuário</button>
+        </form>
+    </div>
+    </div>
+
 </div>
 
 <!-- Modal Reset de Senha -->
@@ -138,7 +233,7 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="border:none; padding:0 25px 20px 25px; gap:10px;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" data-bs-dismiss="modal" style="background:#f0f0f0; color:#555; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer;">Cancelar</button>
                     <button type="submit" style="background:#e67e22; color:white; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer;">
                         <i class="fas fa-key"></i> Confirmar Reset
                     </button>
@@ -167,5 +262,53 @@ document.getElementById('formResetSenha').addEventListener('submit', function(e)
         document.getElementById('erroSenhaModal').style.display = 'block';
     }
 });
+
+/**
+ * Alterna entre as abas "Equipe Ativa", "Equipe Inativa" e "Cadastrar Membro".
+ */
+const ABAS_EQUIPE = ['ativos', 'inativos', 'cadastro'];
+
+function mudarAbaEquipe(aba) {
+    ABAS_EQUIPE.forEach(function (nome) {
+        const ativa = nome === aba;
+
+        const conteudo = document.getElementById('aba-equipe-' + nome);
+        if (conteudo) conteudo.style.display = ativa ? '' : 'none';
+
+        const botao = document.getElementById('tab-btn-' + nome);
+        if (botao) {
+            botao.classList.toggle('tab-segmento-ativa', ativa);
+            botao.setAttribute('aria-selected', ativa ? 'true' : 'false');
+        }
+    });
+}
+
+/**
+ * Filtra os membros ativos por nome ou nome de usuário (busca livre).
+ */
+function filtrarMembrosEquipe() {
+    const buscaInput = document.getElementById('busca_membro');
+    if (!buscaInput) return;
+
+    const busca = buscaInput.value.trim().toLowerCase();
+    let algumVisivel = false;
+
+    document.querySelectorAll('.grupo-cargo-equipe').forEach(function (grupo) {
+        let grupoTemItemVisivel = false;
+        grupo.querySelectorAll('.linha-membro-equipe').forEach(function (linha) {
+            const combina = !busca || linha.dataset.nome.includes(busca) || linha.dataset.username.includes(busca);
+            linha.style.display = combina ? '' : 'none';
+            if (combina) grupoTemItemVisivel = true;
+        });
+
+        grupo.style.display = grupoTemItemVisivel ? '' : 'none';
+        if (grupoTemItemVisivel) algumVisivel = true;
+    });
+
+    const msgVazio = document.getElementById('msg_sem_resultado_equipe');
+    if (msgVazio) msgVazio.style.display = algumVisivel ? 'none' : 'block';
+}
+
+document.getElementById('busca_membro') && document.getElementById('busca_membro').addEventListener('input', filtrarMembrosEquipe);
 </script>
 {% endblock %}

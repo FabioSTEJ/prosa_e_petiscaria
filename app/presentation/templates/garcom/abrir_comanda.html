@@ -2,10 +2,10 @@
 
 {% block content %}
 <div class="container-mobile">
-    <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
             <h2 style="margin: 0; color: #2c3e50;">Mesa {{ mesa.numero }}</h2>
-            <p style="margin: 0; color: #666; font-size: 0.9rem;">Abrir Novo Atendimento</p>
+            <p style="margin: 0; color: #666; font-size: 0.9rem;">Abrir Nova Comanda</p>
         </div>
         <span class="badge" style="background-color: #3498db; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">
             {{ mesa.status }}
@@ -16,22 +16,29 @@
         <div style="background: #3498db; color: white; padding: 12px; text-align: center;">
             <h5 style="margin: 0;"><i class="fas fa-check-circle"></i> Confirmação de Abertura</h5>
         </div>
-        
+
         <div style="padding: 30px; text-align: center;">
-            <p style="font-size: 1.1rem; color: #2c3e50; margin-bottom: 25px;">
-                Deseja confirmar a abertura da <br><strong>Mesa {{ mesa.numero }}</strong>?
+            <p style="font-size: 1.1rem; color: #2c3e50; margin-bottom: 20px;">
+                Deseja abrir uma comanda nessa <br><strong>Mesa {{ mesa.numero }}</strong>?
             </p>
 
-            <form action="{{ url_for('garcom.abrir_mesa', mesa_id=mesa.id) }}" method="POST">
-                <button type="submit" style="
-                    width: 100%; 
-                    padding: 15px; 
-                    background-color: #2ecc71; 
-                    color: white; 
-                    border: none; 
-                    border-radius: 8px; 
-                    font-size: 1.1rem; 
-                    font-weight: bold; 
+            <form action="{{ url_for('garcom.abrir_comanda', mesa_id=mesa.id) }}" method="POST">
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #34495e;">Nome da Comanda</label>
+                    <input type="text" name="nome" value="{{ sugestao_nome }}" maxlength="80" class="input-busca-rapida"
+                           style="width: 100%; padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 1rem;">
+                    <small style="color: #95a5a6;">Pode aceitar a sugestão ou digitar algo como "Casal da janela".</small>
+                </div>
+
+                <button type="submit" class="btn-cheio" style="
+                    width: 100%;
+                    padding: 15px;
+                    background-color: #2ecc71;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 1.1rem;
+                    font-weight: bold;
                     cursor: pointer;
                     margin-bottom: 15px;
                     display: flex;

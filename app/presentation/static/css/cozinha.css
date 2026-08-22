@@ -5,6 +5,89 @@
     animation: fadeIn 0.5s ease-in;
 }
 
+/* --- BOTÃO FLUTUANTE: MODO PAINEL / TELA CHEIA ---
+   Fica fixo na tela (independe de scroll) e continua acessível mesmo com
+   a interface do app escondida — é o único jeito de sair do modo painel. */
+.kds-panel-toggle {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 2000;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 30px;
+    background: rgba(44, 62, 80, 0.85);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.kds-panel-toggle:hover { background: rgba(44, 62, 80, 0.96); transform: translateY(-2px); }
+.kds-panel-toggle:active { transform: scale(0.96); }
+.kds-panel-toggle i { font-size: 1rem; }
+
+/* Enquanto o modo painel está ativo, o botão fica em destaque (laranja) pra
+   deixar claro que é o botão de SAÍDA agora. */
+body.kds-modo-painel .kds-panel-toggle {
+    background: rgba(230, 126, 34, 0.9);
+}
+body.kds-modo-painel .kds-panel-toggle:hover {
+    background: rgba(230, 126, 34, 1);
+}
+
+/* --- MODO PAINEL ATIVO ---
+   "Só fique os pedidos": esconde sidebar, topbar mobile e o cabeçalho da
+   página, deixando a tela inteira pro grid de cards. A legenda de cores
+   continua visível (relevante até de longe, num tablet fixo na parede),
+   só que reduzida a uma linha fina, sem o título/subtítulo. */
+body.kds-modo-painel .sidebar,
+body.kds-modo-painel .mobile-topbar,
+body.kds-modo-painel .sidebar-overlay {
+    display: none !important;
+}
+
+body.kds-modo-painel #content {
+    margin-left: 0 !important;
+    padding: 10px !important;
+}
+
+body.kds-modo-painel .kds-container {
+    padding: 0;
+}
+
+body.kds-modo-painel .kds-header-page {
+    justify-content: center;
+    padding: 6px 14px;
+    margin-bottom: 10px;
+}
+
+body.kds-modo-painel .kds-header-page .header-info {
+    display: none;
+}
+
+/* Legenda maior em modo painel: pensada pra ser lida de longe, não pra
+   caber pouco espaço como no cabeçalho compacto do celular. */
+body.kds-modo-painel .kds-legenda-item {
+    font-size: 0.9rem;
+    gap: 7px;
+}
+
+body.kds-modo-painel .kds-dot {
+    width: 12px;
+    height: 12px;
+}
+
+/* O cabeçalho compacto (.kds-header-page/.kds-legenda*/.kds-dot) e as
+   bolinhas de status agora moram em componentes.css — passaram a ser
+   reaproveitados também por painel.html (mapa de mesas do garçom), que
+   tem exatamente o mesmo problema de espaço em tela pequena. */
+
 .grid-mesas-kds {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -48,11 +131,66 @@
     margin-bottom: 15px;
 }
 
+/* Linha "MESA" + rótulo de status: fica na mesma linha do texto pequeno
+   "MESA", sem criar uma linha nova no card (o número grande da mesa
+   continua abaixo, sem mudar de posição/tamanho). */
+.kds-mesa-topo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+/* Rótulo de status em texto — reforça em palavras o que a borda colorida
+   do card já indica em cor, pra não depender só da legenda no topo da
+   página pra entender o status de um card isolado. */
+.kds-status-pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    line-height: 1.5;
+    border: 1px solid transparent;
+}
+
+.pill-pendente {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.pill-preparo {
+    background: rgba(243, 156, 18, 0.12);
+    color: #b9770e;
+    border-color: rgba(243, 156, 18, 0.35);
+}
+
+.pill-pronto {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
 .kds-mesa-numero {
     font-size: 2rem;
     font-weight: 900;
     color: #2c3e50;
     display: block;
+}
+
+/* Nome da comanda abaixo do número da mesa — essencial pra distinguir
+   comandas diferentes quando duas ou mais estão abertas na mesma mesa
+   (ex.: mesas unidas), evitando entregar/preparar pro grupo errado. */
+.kds-comanda-nome {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    margin-top: 2px;
 }
 
 .kds-timer {
@@ -112,7 +250,12 @@
     font-weight: bold;
     font-size: 0.8rem;
     text-transform: uppercase;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
 }
+
+.btn-kds:hover { filter: brightness(1.08); box-shadow: 0 5px 12px rgba(0,0,0,0.18); }
+.btn-kds:active { transform: scale(0.96); filter: brightness(0.96); }
 
 .btn-iniciar   { background: #f39c12; }
 .btn-concluir  { background: #28a745; }
@@ -126,6 +269,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    box-shadow: none;
 }
 
 .btn-cancelar-kds {
@@ -137,7 +281,11 @@
     justify-content: center;
     border-radius: 10px;
     text-decoration: none;
+    transition: background 0.15s ease, transform 0.05s ease;
 }
+
+.btn-cancelar-kds:hover { background: #ffe3e3; }
+.btn-cancelar-kds:active { transform: scale(0.94); }
 
 /* Estado Vazio (O que você achou mais bonito) */
 .kds-empty-state {
@@ -153,4 +301,33 @@
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* Tablet/celular grande: cards um pouco mais densos pra mostrar mais
+   pedidos sem rolar. O cabeçalho (.kds-header-page etc.) já compacta
+   sozinho via componentes.css. */
+@media (max-width: 767px) {
+    .grid-mesas-kds { margin-top: 12px; }
+
+    .card-pedido-kds { padding: 12px; min-height: 0; }
+    .kds-header { margin-bottom: 10px; }
+    .kds-mesa-numero { font-size: 1.7rem; }
+    .kds-item-box { padding: 10px; margin-bottom: 10px; }
+    .kds-item-nome { font-size: 1.15rem; margin-bottom: 4px; }
+    .btn-kds { padding: 10px; }
+}
+
+/* Celular: cards no mínimo indispensável pra sobrar espaço pros pedidos. */
+@media (max-width: 480px) {
+    .grid-mesas-kds { margin-top: 10px; gap: 10px; }
+
+    .card-pedido-kds { padding: 10px; border-radius: 12px; }
+    .kds-mesa-numero { font-size: 1.5rem; }
+    .kds-status-pill { font-size: 0.56rem; padding: 1px 6px; }
+    .kds-timer { font-size: 0.72rem; }
+    .kds-timer strong { font-size: 1rem; }
+    .kds-item-nome { font-size: 1.05rem; }
+    .kds-observacao { font-size: 0.78rem; padding: 5px 8px; }
+    .btn-kds { padding: 9px; font-size: 0.75rem; }
+    .btn-cancelar-kds { width: 40px; }
 }

@@ -11,6 +11,7 @@ class Venda(db.Model):
     aberta_por_nome = db.Column(db.String(100))
     fechada_por_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
+    comanda_nome = db.Column(db.String(80), nullable=True)
 
     def tempo_permanencia(self):
         if self.data_fechamento and self.data_abertura:

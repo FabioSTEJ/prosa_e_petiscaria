@@ -5,6 +5,7 @@ from datetime import datetime
 class Pedido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=False)
+    comanda_id = db.Column(db.Integer, db.ForeignKey('comanda.id'), nullable=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
     item_nome = db.Column(db.String(100), nullable=False)
     quantidade = db.Column(db.Integer, default=1)
@@ -13,5 +14,6 @@ class Pedido(db.Model):
     data = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(20), default='Pendente')
     observacao = db.Column(db.Text, nullable=True)
+    precisa_preparo = db.Column(db.Boolean, default=True, nullable=False)
 
-    mesa_rel = db.relationship('Mesa', backref='pedidos_da_mesa')
+    comanda_rel = db.relationship('Comanda', backref='pedidos')

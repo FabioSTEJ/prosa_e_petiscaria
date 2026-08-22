@@ -33,7 +33,13 @@
     <div class="wrapper">
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h3><i class="fas fa-utensils"></i> Prosa & Petiscaria</h3>
+                <div class="sidebar-header-topo">
+                    <h3><i class="fas fa-utensils"></i> <span class="sidebar-header-texto">Prosa & Petiscaria</span></h3>
+                    <button type="button" id="sidebarCollapseToggle" class="sidebar-collapse-toggle"
+                            title="Recolher menu" aria-label="Recolher menu" aria-pressed="false">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="user-profile-section">
@@ -42,7 +48,7 @@
                     <span class="user-role">{{ session['cargo']|upper }}</span>
                 </div>
                 <a href="{{ url_for('auth.logout') }}" class="btn-sair-sidebar" title="Sair">
-                    <i class="fas fa-sign-out-alt"></i> Sair
+                    <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
                 </a>
             </div>
 
@@ -55,7 +61,7 @@
                 {# ─── INÍCIO (admin e garçom) ─── #}
                 {% if session['cargo'] != 'cozinha' %}
                 <a href="{{ url_for('admin.dashboard_view' if session['cargo'] == 'admin' else 'garcom.home_garcom') }}"
-                   class="{{ 'active' if ep in ('admin.dashboard_view', 'garcom.home_garcom') else '' }}">
+                   class="{{ 'active' if ep in ('admin.dashboard_view', 'garcom.home_garcom') else '' }}" title="Início">
                     <i class="fas fa-home"></i> <span>Início</span>
                 </a>
                 {% endif %}
@@ -66,12 +72,12 @@
                 <small class="sidebar-section-label">ATENDIMENTO</small>
 
                 <a href="{{ url_for('garcom.painel_garcom') }}"
-                   class="{{ 'active' if ep in ('garcom.painel_garcom', 'garcom.detalhe_mesa', 'garcom.abrir_mesa', 'garcom.lancar_item') else '' }}">
+                   class="{{ 'active' if ep in ('garcom.painel_garcom', 'garcom.detalhe_mesa', 'garcom.abrir_comanda', 'garcom.detalhe_comanda', 'garcom.lancar_item', 'garcom.tela_unir_mesas', 'garcom.unir_mesas', 'garcom.desunir_mesa') else '' }}" title="Mesas">
                     <i class="fas fa-map-marked-alt"></i> <span>Mesas</span>
                 </a>
 
-                <a href="{{ url_for('garcom.pedidos_prontos_view') }}"
-                   class="{{ 'active' if ep in ('garcom.pedidos_prontos_view', 'garcom.entregar_pedido') else '' }}">
+                <a id="sidebarLinkPedidosProntos" href="{{ url_for('garcom.pedidos_prontos_view') }}"
+                   class="{{ 'active' if ep in ('garcom.pedidos_prontos_view', 'garcom.entregar_pedido') else '' }}" title="Pedidos Prontos">
                     <i class="fas fa-bell"></i>
                     <span>Pedidos Prontos</span>
                     {% if pedidos_prontos_count > 0 %}
@@ -85,8 +91,8 @@
                 <hr class="sidebar-divider">
                 <small class="sidebar-section-label">PRODUÇÃO</small>
 
-                <a href="{{ url_for('admin.painel_cozinha') }}"
-                   class="{{ 'active' if ep == 'admin.painel_cozinha' else '' }}">
+                <a id="sidebarLinkCozinha" href="{{ url_for('admin.painel_cozinha') }}"
+                   class="{{ 'active' if ep == 'admin.painel_cozinha' else '' }}" title="Cozinha">
                     <i class="fas fa-fire-alt"></i>
                     <span>Cozinha</span>
                     {% if pedidos_pendentes_count > 0 %}
@@ -101,19 +107,19 @@
                 <small class="sidebar-section-label">ADMINISTRAÇÃO</small>
 
                 <a href="{{ url_for('admin.gerenciar_usuarios_view') }}"
-                   class="{{ 'active' if ep == 'admin.gerenciar_usuarios_view' else '' }}">
+                   class="{{ 'active' if ep == 'admin.gerenciar_usuarios_view' else '' }}" title="Equipe">
                     <i class="fas fa-users"></i> <span>Equipe</span>
                 </a>
                 <a href="{{ url_for('admin.gerenciar_cardapio_view') }}"
-                   class="{{ 'active' if ep == 'admin.gerenciar_cardapio_view' else '' }}">
+                   class="{{ 'active' if ep == 'admin.gerenciar_cardapio_view' else '' }}" title="Cardápio">
                     <i class="fas fa-hamburger"></i> <span>Cardápio</span>
                 </a>
                 <a href="{{ url_for('admin.gerenciar_mesas_view') }}"
-                   class="{{ 'active' if ep == 'admin.gerenciar_mesas_view' else '' }}">
+                   class="{{ 'active' if ep == 'admin.gerenciar_mesas_view' else '' }}" title="Config. Mesas">
                     <i class="fas fa-table"></i> <span>Config. Mesas</span>
                 </a>
                 <a href="{{ url_for('admin.historico_vendas_view') }}"
-                   class="{{ 'active' if ep == 'admin.historico_vendas_view' else '' }}">
+                   class="{{ 'active' if ep == 'admin.historico_vendas_view' else '' }}" title="Histórico">
                     <i class="fas fa-chart-line"></i> <span>Histórico</span>
                 </a>
                 {% endif %}
@@ -164,31 +170,90 @@
             });
         });
 
+        // Sidebar recolhida (modo só-ícone) — comportamento de desktop/tablet
+        // largo, independente do overlay mobile acima. A preferência fica em
+        // localStorage porque cada navegação é um carregamento de página novo
+        // (sem isso o usuário teria que recolher de novo em toda tela).
+        (function () {
+            const CHAVE_STORAGE_SIDEBAR = 'sidebar-recolhida';
+            const botaoRecolher = document.getElementById('sidebarCollapseToggle');
+            if (!botaoRecolher) return;
+
+            const icone = botaoRecolher.querySelector('i');
+
+            function aplicarEstadoSidebar(recolhida) {
+                document.body.classList.toggle('sidebar-recolhida', recolhida);
+                try {
+                    localStorage.setItem(CHAVE_STORAGE_SIDEBAR, recolhida ? '1' : '0');
+                } catch (erro) {
+                    // Armazenamento indisponível (modo privado etc.) — o
+                    // toggle manual ainda funciona normalmente nessa sessão.
+                }
+
+                botaoRecolher.setAttribute('aria-pressed', String(recolhida));
+                botaoRecolher.title = recolhida ? 'Expandir menu' : 'Recolher menu';
+                botaoRecolher.setAttribute('aria-label', recolhida ? 'Expandir menu' : 'Recolher menu');
+                if (icone) {
+                    icone.classList.toggle('fa-chevron-left', !recolhida);
+                    icone.classList.toggle('fa-chevron-right', recolhida);
+                }
+            }
+
+            botaoRecolher.addEventListener('click', function () {
+                aplicarEstadoSidebar(!document.body.classList.contains('sidebar-recolhida'));
+            });
+
+            let preferidaRecolhida = false;
+            try {
+                preferidaRecolhida = localStorage.getItem(CHAVE_STORAGE_SIDEBAR) === '1';
+            } catch (erro) {
+                // Sem acesso a localStorage — começa sempre expandido.
+            }
+            if (preferidaRecolhida) {
+                aplicarEstadoSidebar(true);
+            }
+        })();
+
         // Socket.IO global
         const socket = io();
 
-        // Atualiza badge de pedidos prontos via Socket.IO
-        socket.on('status_pedido', function(data) {
-            if (data.novo_status === 'Pronto' || data.novo_status === 'Entregue' || data.novo_status === 'Cancelado') {
-                const badge = document.querySelector('.sidebar-badge');
-                if (data.novo_status === 'Pronto') {
-                    // Recarrega para atualizar contagem
-                    const url = new URL(window.location.href);
-                    fetch('/garcom/pedidos-prontos', {method: 'HEAD'}).then(() => {
-                        if (badge) {
-                            const count = parseInt(badge.textContent) + 1;
-                            badge.textContent = count;
-                        } else {
-                            // Recarrega a sidebar via reload da página
-                            // Só recarrega se não for a página de pedidos prontos
-                            if (!window.location.pathname.includes('pedidos-prontos')) {
-                                location.reload();
-                            }
-                        }
-                    }).catch(() => {});
+        // Badges de contagem da sidebar (Pedidos Prontos / Cozinha): em vez
+        // de tentar adivinhar o número somando/subtraindo manualmente a cada
+        // evento (frágil e fácil de dessincronizar), busca a contagem real
+        // no backend e atualiza o DOM — sem nunca recarregar a página, pra
+        // não atrapalhar quem estiver com um formulário em preenchimento em
+        // qualquer tela (a sidebar existe em toda tela do sistema).
+        function atualizarBadgeSidebar(link, contagem) {
+            if (!link) return;
+            let badge = link.querySelector('.sidebar-badge');
+            if (contagem > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'sidebar-badge';
+                    link.appendChild(badge);
                 }
+                badge.textContent = contagem;
+            } else if (badge) {
+                badge.remove();
             }
-        });
+        }
+
+        function atualizarContadoresSidebar() {
+            fetch('/contadores-sidebar')
+                .then(function (resposta) { return resposta.ok ? resposta.json() : null; })
+                .then(function (dados) {
+                    if (!dados) return;
+                    atualizarBadgeSidebar(document.getElementById('sidebarLinkPedidosProntos'), dados.pedidos_prontos_count);
+                    atualizarBadgeSidebar(document.getElementById('sidebarLinkCozinha'), dados.pedidos_pendentes_count);
+                })
+                .catch(function () {
+                    // Falha de rede/servidor — os badges só não atualizam
+                    // dessa vez; o próximo evento do socket tenta de novo.
+                });
+        }
+
+        socket.on('novo_pedido', atualizarContadoresSidebar);
+        socket.on('status_pedido', atualizarContadoresSidebar);
     </script>
 
     {% block extra_js %}{% endblock %}

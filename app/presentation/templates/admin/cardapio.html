@@ -2,108 +2,110 @@
 
 {% block content %}
 <div class="container-admin">
-    <div class="card-header-destaque">
+    <div class="kds-header-page card-header-com-abas">
         <div class="header-info">
             <h2><i class="fas fa-hamburger"></i> Gerenciar Cardápio</h2>
-            <p>Cadastre novos produtos ou edite preços mantendo a integridade do seu histórico.</p>
+            <p>Adicione itens novos, edite preços e controle o que aparece no cardápio.</p>
+        </div>
+
+        <div class="tabs-segmentadas" role="tablist">
+            <button type="button" id="tab-btn-ativos" class="tab-segmento tab-segmento-ativa" onclick="mudarAbaCardapio('ativos')" role="tab" aria-selected="true">
+                <i class="fas fa-list-ul"></i> Itens Ativos <span class="tab-segmento-contador">{{ produtos|length }}</span>
+            </button>
+            <button type="button" id="tab-btn-inativos" class="tab-segmento" onclick="mudarAbaCardapio('inativos')" role="tab" aria-selected="false">
+                <i class="fas fa-eye-slash"></i> Itens Desativados <span class="tab-segmento-contador">{{ produtos_inativos|length }}</span>
+            </button>
+            <button type="button" id="tab-btn-cadastro" class="tab-segmento" onclick="mudarAbaCardapio('cadastro')" role="tab" aria-selected="false">
+                <i class="fas fa-plus-circle"></i> Cadastrar Item
+            </button>
         </div>
     </div>
-    
-    <div class="card-form">
-        <h3 id="titulo-form">Cadastrar Novo Item</h3>
-        <form method="POST" id="form-produto">
-            <input type="hidden" name="id_produto" id="id_produto">
 
-            <div class="form-group">
-                <label>Nome do Produto:</label>
-                <input type="text" name="nome" id="nome_input" placeholder="Ex: Batata Frita com Queijo" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Preço de Venda (R$):</label>
-                <input type="number" step="0.01" name="preco" id="preco_input" placeholder="35.00" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Categoria:</label>
-                <select name="categoria" id="categoria_input">
-                    <optgroup label="Bebidas">
-                        <option value="Bebidas">🍺 Bebidas Gerais</option>
-                        <option value="Doses">🥃 Doses</option>
-                    </optgroup>
-                    <optgroup label="Cozinha">
-                        <option value="Petiscos">🍟 Petiscos</option>
-                        <option value="Pratos">🍽️ Pratos</option>
-                        <option value="Lanches">🍔 Lanches</option>
-                        <option value="Sobremesas">🍰 Sobremesas</option>
-                    </optgroup>
-                </select>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-success" style="flex: 2;">
-                    <i class="fas fa-save"></i> <span id="texto-botao">Adicionar ao Cardápio</span>
-                </button>
-                <button type="button" id="btn-cancelar" class="btn-voltar" style="display: none; flex: 1; background-color: #e74c3c;" onclick="limparEdicao()">
-                    Cancelar
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <hr class="divisor">
-
+    <div id="aba-cardapio-ativos">
     <div class="card-form">
         <h3><i class="fas fa-list-ul"></i> Itens Ativos</h3>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Item / Categoria</th>
-                        <th>Preço</th>
-                        <th class="text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in produtos %}
-                    <tr>
-                        <td>
-                            <span class="user-main-name">{{ p.nome }}</span><br>
-                            <span class="badge badge-categoria">{{ p.categoria }}</span>
-                        </td>
-                        <td class="preco-tag">R$ {{ "%.2f"|format(p.preco) }}</td>
-                        <td class="text-center">
-                            <div class="acoes-botoes" style="justify-content: center;">
-                                <a href="javascript:void(0)"
-                                   onclick="editarProduto('{{ p.id }}', '{{ p.nome|replace("'","\\'")|replace('"','\\"') }}', '{{ p.preco }}', '{{ p.categoria }}')"
-                                   class="btn-action" title="Editar preço/nome" style="color: #3498db;">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{{ url_for('admin.deletar_produto_view', produto_id=p.id) }}"
-                                   class="btn-action btn-delete"
-                                   onclick="return confirm('Desativar \'{{ p.nome }}\' do cardápio?\nO item ficará oculto para novos pedidos, mas o histórico de vendas será preservado.')"
-                                   title="Desativar">
-                                    <i class="fas fa-eye-slash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" style="text-align:center; color:#999; padding:30px;">Nenhum item ativo no cardápio.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+        {% if produtos %}
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;">
+            <input type="text" id="busca_item" class="input-busca-rapida" placeholder="🔍 Buscar por nome..."
+                   style="flex: 2; min-width: 180px; padding: 10px 14px; border-radius: 8px;">
+            <select id="filtro_categoria" class="input-busca-rapida" style="flex: 1; min-width: 160px; padding: 10px 14px; border-radius: 8px;">
+                <option value="">Todas as categorias</option>
+                {% for categoria in produtos | map(attribute='categoria') | unique %}
+                <option value="{{ categoria }}">{{ categoria }}</option>
+                {% endfor %}
+            </select>
         </div>
+        {% endif %}
+
+        <div id="lista-itens-ativos">
+            {% for categoria, itens in produtos | groupby('categoria') %}
+            <div class="grupo-categoria-cardapio" data-categoria="{{ categoria }}" style="margin-bottom: 20px;">
+                <h4 style="color: #7f8c8d; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; border-bottom: 2px solid #f0f0f0; padding-bottom: 6px;">
+                    {{ categoria }} <span style="font-weight: normal; color: #bbb;">({{ itens | length }})</span>
+                </h4>
+                <div class="table-responsive">
+                    <table class="table" style="table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 55%;">
+                            <col style="width: 20%;">
+                            <col style="width: 25%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in itens %}
+                            <tr class="linha-produto-cardapio" data-nome="{{ p.nome|lower }}">
+                                <td>
+                                    <span class="user-main-name">{{ p.nome }}</span>
+                                    {% if not p.precisa_preparo %}
+                                    <span class="badge-direto" title="Não passa pela cozinha">
+                                        <i class="fas fa-bolt"></i> Direto
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="preco-tag">R$ {{ "%.2f"|format(p.preco) }}</td>
+                                <td class="text-center">
+                                    <div class="acoes-botoes" style="justify-content: center;">
+                                        <a href="javascript:void(0)"
+                                           onclick="editarProduto('{{ p.id }}', '{{ p.nome|replace("'","\\'")|replace('"','\\"') }}', '{{ p.preco }}', '{{ p.categoria }}', {{ 'true' if p.precisa_preparo else 'false' }})"
+                                           class="btn-action" title="Editar preço/nome" style="color: #3498db;">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.deletar_produto_view', produto_id=p.id) }}"
+                                           class="btn-action btn-delete"
+                                           onclick="return confirm('Desativar \'{{ p.nome }}\' do cardápio?\nO item ficará oculto para novos pedidos, mas o histórico de vendas será preservado.')"
+                                           title="Desativar">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <p style="text-align:center; color:#999; padding:30px;">Nenhum item ativo no cardápio.</p>
+            {% endfor %}
+        </div>
+        <p id="msg_sem_resultado_cardapio" style="display:none; text-align:center; color:#999; padding:20px;">Nenhum item encontrado pra essa busca.</p>
+    </div>
     </div>
 
-    {% if produtos_inativos %}
+    <div id="aba-cardapio-inativos" style="display: none;">
     <div class="card-form" style="border: 1px solid #f0f0f0; opacity: 0.85;">
         <h3 style="color:#7f8c8d;"><i class="fas fa-eye-slash"></i> Itens Desativados</h3>
         <p style="color:#95a5a6; font-size:0.88rem; margin-bottom:15px;">
             Estes itens estão ocultos no cardápio mas preservados no histórico de vendas. Reative quando necessário.
         </p>
+        {% if produtos_inativos %}
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -132,8 +134,75 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p style="text-align:center; color:#999; padding:30px;">Nenhum item desativado.</p>
+        {% endif %}
     </div>
-    {% endif %}
+    </div>
+
+    <div id="aba-cardapio-cadastro" style="display: none;">
+    <div class="card-form">
+        <h3 id="titulo-form">Cadastrar Novo Item</h3>
+        <form method="POST" id="form-produto">
+            <input type="hidden" name="id_produto" id="id_produto">
+
+            <div class="form-group">
+                <label>Nome do Produto:</label>
+                <input type="text" name="nome" id="nome_input" placeholder="Ex: Batata Frita com Queijo" required>
+            </div>
+
+            <div class="form-group">
+                <label>Preço de Venda (R$):</label>
+                <input type="number" step="0.01" name="preco" id="preco_input" placeholder="35.00" required>
+            </div>
+
+            <div class="form-group">
+                <label>Categoria:</label>
+                <select name="categoria" id="categoria_input">
+                    <optgroup label="Bebidas">
+                        <option value="Cervejas">🍺 Cervejas</option>
+                        <option value="Vinhos">🍷 Vinhos</option>
+                        <option value="Drinks">🍹 Drinks</option>
+                        <option value="Drinks Especiais">✨ Drinks Especiais</option>
+                        <option value="Doses">🥃 Doses</option>
+                        <option value="Bebidas sem Álcool">🥤 Bebidas sem Álcool</option>
+                    </optgroup>
+                    <optgroup label="Cozinha">
+                        <option value="Petiscos">🍟 Petiscos</option>
+                        <option value="Porções">🍤 Porções</option>
+                        <option value="Caldos">🍲 Caldos</option>
+                        <option value="Almoço">🍽️ Almoço</option>
+                        <option value="Pratos Kids">🧒 Pratos Kids</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Precisa de preparo na cozinha?</label>
+                <div style="display: flex; gap: 20px; margin-top: 6px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal;">
+                        <input type="radio" name="precisa_preparo" value="sim" id="precisa_preparo_sim" checked style="width: auto;">
+                        Sim, vai pra cozinha
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal;">
+                        <input type="radio" name="precisa_preparo" value="nao" id="precisa_preparo_nao" style="width: auto;">
+                        Não, é servido direto
+                    </label>
+                </div>
+                <small style="color: #95a5a6;">Itens marcados "Não" (ex.: cerveja, refrigerante) pulam a fila da cozinha e vão direto pra "Pedidos Prontos".</small>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-success" style="flex: 2;">
+                    <i class="fas fa-save"></i> <span id="texto-botao">Adicionar ao Cardápio</span>
+                </button>
+                <button type="button" id="btn-cancelar" class="btn-voltar" style="display: none; flex: 1; background-color: #e74c3c;" onclick="limparEdicao()">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+    </div>
 
 </div>
 
@@ -141,18 +210,24 @@
 /**
  * Preenche o formulário com os dados do produto para edição
  */
-function editarProduto(id, nome, preco, categoria) {
+function editarProduto(id, nome, preco, categoria, precisaPreparo) {
     document.getElementById('id_produto').value = id;
     document.getElementById('nome_input').value = nome;
     document.getElementById('preco_input').value = preco;
     document.getElementById('categoria_input').value = categoria;
-    
+    document.getElementById('precisa_preparo_sim').checked = precisaPreparo;
+    document.getElementById('precisa_preparo_nao').checked = !precisaPreparo;
+
     // Altera a interface para modo edição
     document.getElementById('titulo-form').innerText = "Editando Item";
     document.getElementById('texto-botao').innerText = "Salvar Alterações";
     document.getElementById('btn-cancelar').style.display = "inline-flex";
-    
-    // Rola suavemente para o topo do formulário
+
+    // O formulário agora vive na aba "Cadastrar Item" — sem trocar de aba
+    // ele ficaria preenchido escondido e pareceria que nada aconteceu.
+    mudarAbaCardapio('cadastro');
+
+    // Rola suavemente para o topo da página (onde a aba de cadastro aparece)
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -162,10 +237,66 @@ function editarProduto(id, nome, preco, categoria) {
 function limparEdicao() {
     document.getElementById('id_produto').value = "";
     document.getElementById('form-produto').reset();
-    
+
     document.getElementById('titulo-form').innerText = "Cadastrar Novo Item";
     document.getElementById('texto-botao').innerText = "Adicionar ao Cardápio";
     document.getElementById('btn-cancelar').style.display = "none";
 }
+
+/**
+ * Alterna entre as abas "Itens Ativos", "Itens Desativados" e "Cadastrar Item".
+ */
+const ABAS_CARDAPIO = ['ativos', 'inativos', 'cadastro'];
+
+function mudarAbaCardapio(aba) {
+    ABAS_CARDAPIO.forEach(function (nome) {
+        const ativa = nome === aba;
+
+        const conteudo = document.getElementById('aba-cardapio-' + nome);
+        if (conteudo) conteudo.style.display = ativa ? '' : 'none';
+
+        const botao = document.getElementById('tab-btn-' + nome);
+        if (botao) {
+            botao.classList.toggle('tab-segmento-ativa', ativa);
+            botao.setAttribute('aria-selected', ativa ? 'true' : 'false');
+        }
+    });
+}
+
+/**
+ * Filtra os itens ativos por nome (busca livre) e por categoria.
+ */
+function filtrarItensCardapio() {
+    const buscaInput = document.getElementById('busca_item');
+    const categoriaInput = document.getElementById('filtro_categoria');
+    if (!buscaInput || !categoriaInput) return;
+
+    const busca = buscaInput.value.trim().toLowerCase();
+    const categoriaFiltro = categoriaInput.value;
+    let algumVisivel = false;
+
+    document.querySelectorAll('.grupo-categoria-cardapio').forEach(function (grupo) {
+        if (categoriaFiltro && grupo.dataset.categoria !== categoriaFiltro) {
+            grupo.style.display = 'none';
+            return;
+        }
+
+        let grupoTemItemVisivel = false;
+        grupo.querySelectorAll('.linha-produto-cardapio').forEach(function (linha) {
+            const combina = !busca || linha.dataset.nome.includes(busca);
+            linha.style.display = combina ? '' : 'none';
+            if (combina) grupoTemItemVisivel = true;
+        });
+
+        grupo.style.display = grupoTemItemVisivel ? '' : 'none';
+        if (grupoTemItemVisivel) algumVisivel = true;
+    });
+
+    const msgVazio = document.getElementById('msg_sem_resultado_cardapio');
+    if (msgVazio) msgVazio.style.display = algumVisivel ? 'none' : 'block';
+}
+
+document.getElementById('busca_item') && document.getElementById('busca_item').addEventListener('input', filtrarItensCardapio);
+document.getElementById('filtro_categoria') && document.getElementById('filtro_categoria').addEventListener('change', filtrarItensCardapio);
 </script>
 {% endblock %}

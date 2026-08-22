@@ -1,66 +1,9 @@
 from datetime import datetime
-from app.core.models import Mesa, Pedido, Venda, Usuario
+from app.core.models import Mesa, GrupoMesa
 from app.infrastructure.extensions import db
 
 
 class MesaService:
-    @staticmethod
-    def abrir(mesa_id: int, usuario_id: int) -> tuple:
-        """Retorna (mesa, foi_aberta). foi_aberta é False se já estava ocupada."""
-        mesa = Mesa.query.get_or_404(mesa_id)
-        if not mesa.ativa:
-            raise ValueError(f"Mesa {mesa.numero} está desativada e não pode ser aberta.")
-        if mesa.status != 'Livre':
-            return mesa, False
-        mesa.status = 'Ocupada'
-        mesa.data_abertura = datetime.now()
-        mesa.aberta_por_id = usuario_id
-        db.session.commit()
-        return mesa, True
-
-    @staticmethod
-    def finalizar(mesa_id: int, usuario_id: int) -> dict:
-        """Retorna {'mesa_numero': str, 'total': float}."""
-        mesa = Mesa.query.get_or_404(mesa_id)
-        mesa_numero = mesa.numero  # captura antes da limpeza
-        itens = Pedido.query.filter(
-            Pedido.mesa_id == mesa.id,
-            Pedido.status != 'Cancelado',
-            Pedido.status != 'Finalizado',
-            Pedido.data >= mesa.data_abertura,
-        ).all()
-
-        nao_entregues = [i for i in itens if i.status != 'Entregue']
-        if nao_entregues:
-            raise ValueError(
-                f"Não é possível fechar a mesa: {len(nao_entregues)} item(ns) ainda "
-                "não foram entregues ao cliente."
-            )
-
-        total = 0.0
-        if itens:
-            total = mesa.calcular_total()
-            usuario_abriu = Usuario.query.get(mesa.aberta_por_id)
-            nome_abriu = usuario_abriu.nome_exibicao if usuario_abriu else "Sistema"
-            resumo = ", ".join(f"{i.quantidade}x {i.item_nome}" for i in itens)
-            db.session.add(Venda(
-                mesa_numero=mesa_numero,
-                data_abertura=mesa.data_abertura or datetime.now(),
-                data_fechamento=datetime.now(),
-                valor_total=total,
-                aberta_por_nome=nome_abriu,
-                fechada_por_id=usuario_id,
-                observacoes=resumo,
-            ))
-            for item in itens:
-                item.status = 'Finalizado'
-
-        mesa.status = 'Livre'
-        mesa.data_abertura = None
-        mesa.aberta_por_id = None
-        db.session.commit()
-        return {'mesa_numero': mesa_numero, 'total': total}
-
     @staticmethod
     def alternar_ativa(mesa_id: int) -> bool:
         """Ativa/desativa uma mesa específica (ex.: quebrada, em manutenção),
@@ -92,3 +35,67 @@ class MesaService:
             db.session.commit()
             return f"Salão reduzido para {nova_quantidade} mesas."
         return "Nenhuma alteração necessária."
+
+    @staticmethod
+    def unir(mesa_ids: list, usuario_id: int) -> GrupoMesa:
+        """Une as mesas informadas num só grupo (organização visual).
+
+        Se alguma das mesas selecionadas já pertence a um grupo, as demais
+        entram nesse mesmo grupo em vez de criar um novo — é assim que uma
+        mesa nova se junta a uma união já existente (ex.: chegou mais gente
+        e a mesa 09 precisa se juntar às mesas 03+06 que já estavam unidas).
+        Se as mesas selecionadas pertencerem a grupos diferentes, todos esses
+        grupos são fundidos num só (nenhuma mesa fica "órfã" de um grupo que
+        deixou de existir)."""
+        mesa_ids = [int(m) for m in mesa_ids]
+        if len(mesa_ids) < 2:
+            raise ValueError("Selecione pelo menos 2 mesas para unir.")
+        mesas = Mesa.query.filter(Mesa.id.in_(mesa_ids)).all()
+        if len(mesas) != len(set(mesa_ids)):
+            raise ValueError("Uma ou mais mesas selecionadas não foram encontradas.")
+
+        grupos_existentes = sorted({m.grupo_id for m in mesas if m.grupo_id is not None})
+
+        if not grupos_existentes:
+            grupo = GrupoMesa(criado_em=datetime.now(), criado_por_id=usuario_id)
+            db.session.add(grupo)
+            db.session.flush()
+            for mesa in mesas:
+                mesa.grupo_id = grupo.id
+            db.session.commit()
+            return grupo
+
+        grupo_destino_id = grupos_existentes[0]
+        outros_grupos_ids = grupos_existentes[1:]
+        if outros_grupos_ids:
+            Mesa.query.filter(Mesa.grupo_id.in_(outros_grupos_ids)).update(
+                {'grupo_id': grupo_destino_id}, synchronize_session=False
+            )
+            GrupoMesa.query.filter(GrupoMesa.id.in_(outros_grupos_ids)).delete(
+                synchronize_session=False
+            )
+
+        for mesa in mesas:
+            mesa.grupo_id = grupo_destino_id
+
+        db.session.commit()
+        return GrupoMesa.query.get(grupo_destino_id)
+
+    @staticmethod
+    def desunir_mesa(mesa_id: int) -> None:
+        """Remove apenas a mesa informada do grupo. Dissolve o grupo se sobrar <= 1 membro."""
+        mesa = Mesa.query.get_or_404(mesa_id)
+        grupo_id = mesa.grupo_id
+        if grupo_id is None:
+            return
+        mesa.grupo_id = None
+        db.session.flush()
+
+        restantes = Mesa.query.filter_by(grupo_id=grupo_id).all()
+        if len(restantes) <= 1:
+            for m in restantes:
+                m.grupo_id = None
+            grupo = GrupoMesa.query.get(grupo_id)
+            if grupo:
+                db.session.delete(grupo)
+        db.session.commit()

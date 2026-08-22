@@ -2,60 +2,56 @@
 
 {% block content %}
 <div class="container-admin">
-    
-    <div class="card-form" style="margin-bottom: 30px; padding: 25px; border-left: 6px solid #2c3e50; background: linear-gradient(to right, #ffffff, #f8f9fa); box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-            <div>
-                <h1 style="margin: 0; color: #2c3e50; font-size: 1.8rem; letter-spacing: -0.5px;">
-                    Dashboard 📊
-                </h1>
-                <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
-                    <span style="background: #2c3e50; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                        {{ data_atual }}
-                    </span>
-                    <span style="color: #7f8c8d; font-size: 0.9rem;">| Monitoramento de Performance</span>
+
+    <div class="kds-header-page">
+        <div class="header-info">
+            <h2>Dashboard 📊 <span class="header-subtitulo-inline">Monitoramento de Performance</span></h2>
+        </div>
+
+        <form action="{{ url_for('admin.dashboard_view') }}" method="GET" class="filtro-periodo-inline">
+            <input type="text" name="data_inicio" value="{{ data_inicio_br }}" class="input-data-clean input-data-br"
+                   placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" autocomplete="off" aria-label="Data início">
+            <span class="filtro-periodo-separador">até</span>
+            <input type="text" name="data_fim" value="{{ data_fim_br }}" class="input-data-clean input-data-br"
+                   placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" autocomplete="off" aria-label="Data fim">
+            <button type="submit" class="btn-success btn-search-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card stat-card-grupo" aria-label="Resumo do dia">
+            <div class="stat-grupo-item">
+                <div class="stat-icon icon-vendas"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Vendas no Dia</span>
+                    <span class="stat-value">R$ {{ "%.2f"|format(vendas_hoje) }}</span>
                 </div>
             </div>
 
-            <form action="{{ url_for('admin.dashboard_view') }}" method="GET" style="display: flex; gap: 10px; align-items: center; background: #fff; padding: 8px; border-radius: 10px; border: 1px solid #dee2e6;">
-                <input type="date" name="data_pesquisa" value="{{ data_iso }}" style="border: none; outline: none; padding: 5px; color: #495057;">
-                <button type="submit" class="btn-success" style="padding: 8px 18px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <div class="stat-card">
-            <div class="stat-icon icon-vendas"><i class="fas fa-dollar-sign"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">Vendas no Dia</span>
-                <span class="stat-value">R$ {{ "%.2f"|format(vendas_hoje) }}</span>
+            <div class="stat-grupo-item">
+                <div class="stat-icon icon-pedidos"><i class="fas fa-clipboard-list"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Itens Pedidos</span>
+                    <span class="stat-value">{{ total_pedidos }}</span>
+                </div>
             </div>
-        </div>
 
-        <div class="stat-card">
-            <div class="stat-icon icon-pedidos"><i class="fas fa-clipboard-list"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">Itens Pedidos</span>
-                <span class="stat-value">{{ total_pedidos }}</span>
+            <div class="stat-grupo-item">
+                <div class="stat-icon icon-ticket"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Ticket Médio</span>
+                    <span class="stat-value">R$ {{ "%.2f"|format(ticket_medio) }}</span>
+                </div>
             </div>
-        </div>
 
-        <div class="stat-card">
-            <div class="stat-icon icon-ticket"><i class="fas fa-chart-line"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">Ticket Médio</span>
-                <span class="stat-value">R$ {{ "%.2f"|format(ticket_medio) }}</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon" style="background: #fff3e0; color: #ef6c00;"><i class="fas fa-clock"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">Permanência Média</span>
-                <span class="stat-value">{{ permanencia_media }} min</span>
+            <div class="stat-grupo-item">
+                <div class="stat-icon icon-mesas"><i class="fas fa-table"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Mesas Ativas Agora</span>
+                    <span class="stat-value">{{ mesas_ativas }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -63,44 +59,71 @@
     <div class="dashboard-grid">
 
         <div class="card-form dashboard-card-main">
-            <h3 style="border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">
-                <i class="fas fa-fire" style="color: #e67e22;"></i> Top Itens
-            </h3>
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="text-align: left; color: #95a5a6; font-size: 0.85rem; text-transform: uppercase;">
-                        <th style="padding: 10px;">Produto</th>
-                        <th style="padding: 10px; text-align: center; white-space: nowrap;">Vendas</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in mais_vendidos %}
-                    <tr style="border-bottom: 1px solid #f8f9fa;">
-                        <td style="padding: 12px 10px; font-weight: 500; color: #2c3e50; word-break: break-word;">{{ p.nome }}</td>
-                        <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
-                            <span style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 15px; font-weight: 700; font-size: 0.9rem;">
-                                {{ p.quantidade }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <h3><i class="fas fa-fire" style="color: #e67e22;"></i> Top Itens</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th class="text-center">Vendas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in mais_vendidos %}
+                        <tr>
+                            <td class="user-main-name" style="word-break: break-word;">{{ p.nome }}</td>
+                            <td class="text-center">
+                                <span style="display: inline-block; min-width: 34px; background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 15px; font-weight: 700; font-size: 0.9rem;">
+                                    {{ p.quantidade }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" style="text-align: center; padding: 30px; color: #95a5a6;">
+                                <i class="fas fa-info-circle"></i> Nenhuma venda registrada nesse dia.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="card-form dashboard-card-side">
-            <h3 style="border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">
-                <i class="fas fa-users" style="color: #3498db;"></i> Equipe
-            </h3>
+            <h3><i class="fas fa-users" style="color: #3498db;"></i> Equipe</h3>
             <div class="equipe-lista">
                 {% for g in desempenho_garcons %}
                 <div class="equipe-item">
                     <span class="equipe-nome">{{ g.nome }}</span>
                     <span class="equipe-valor">R$ {{ "%.2f"|format(g.total_vendas) }}</span>
                 </div>
+                {% else %}
+                <p style="text-align: center; color: #999; padding: 20px;">Nenhum atendimento registrado nesse dia.</p>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // input type="date" nativo segue o idioma do navegador (não o lang da
+    // página), então em navegador configurado em inglês mostrava mm/dd/aaaa
+    // mesmo com <html lang="pt-br">. Texto com máscara garante dd/mm/aaaa
+    // sempre, independente da configuração do navegador do usuário.
+    document.querySelectorAll('.input-data-br').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var digitos = input.value.replace(/\D/g, '').slice(0, 8);
+            var formatado = digitos;
+            if (digitos.length > 4) {
+                formatado = digitos.slice(0, 2) + '/' + digitos.slice(2, 4) + '/' + digitos.slice(4);
+            } else if (digitos.length > 2) {
+                formatado = digitos.slice(0, 2) + '/' + digitos.slice(2);
+            }
+            input.value = formatado;
+        });
+    });
+</script>
 {% endblock %}

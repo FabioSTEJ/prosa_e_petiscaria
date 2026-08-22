@@ -29,6 +29,7 @@ body {
     box-shadow: 4px 0 15px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    transition: width 0.25s ease, min-width 0.25s ease, max-width 0.25s ease;
 }
 
 .sidebar-header {
@@ -40,6 +41,46 @@ body {
     color: #fff;
     font-size: 1.1rem;
     margin: 0;
+}
+
+/* Linha do topo do cabeçalho: logo + botão de recolher/expandir o menu.
+   Centralizada por padrão — no mobile o botão fica escondido (ver media
+   query abaixo) e sobra só o título, reproduzindo o layout centralizado
+   original; no desktop expandido o botão aparece ao lado do título; no
+   desktop recolhido os dois empilham (ver bloco "SIDEBAR RECOLHIDA"). */
+.sidebar-header-topo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Botão fixo de recolher/expandir — sempre no mesmo lugar (topo da
+   sidebar), tanto expandida quanto recolhida. Só existe em desktop/tablet
+   largo (escondido dentro do modo overlay mobile, ver media query). */
+.sidebar-collapse-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.sidebar-collapse-toggle:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.sidebar-collapse-toggle:active {
+    transform: scale(0.92);
 }
 
 /* --- ÁREA DO USUÁRIO --- */
@@ -187,10 +228,11 @@ body {
 /* --- ÁREA DE CONTEÚDO --- */
 #content {
     flex: 1;
-    margin-left: 260px; 
-    padding: 40px 50px; 
+    margin-left: 260px;
+    padding: 40px 50px;
     box-sizing: border-box;
     min-height: 100vh;
+    transition: margin-left 0.25s ease;
 }
 
 /* --- TOPBAR MOBILE + TABLET --- */
@@ -255,6 +297,11 @@ body {
     }
     .sidebar.sidebar-open { transform: translateX(0); }
 
+    /* Recolher é um comportamento de desktop/tablet largo — no modo overlay
+       mobile o menu já fecha via hambúrguer/toque fora dele, então o botão
+       de recolher some pra não confundir com um segundo controle. */
+    .sidebar-collapse-toggle { display: none; }
+
     #content {
         margin-left: 0;
         padding: 20px;
@@ -274,5 +321,95 @@ body {
     #content {
         padding: 10px;
         padding-top: 66px;
+    }
+}
+
+/* --- SIDEBAR RECOLHIDA (modo só-ícone) ---
+   Só existe em desktop/tablet largo — a mesma faixa onde a sidebar já é
+   fixa (acima de 1024px). Abaixo disso o modo overlay mobile manda, e o
+   próprio botão de recolher já nem aparece (ver media query acima). */
+@media (min-width: 1025px) {
+    body.sidebar-recolhida .sidebar {
+        width: 76px;
+        min-width: 76px;
+        max-width: 76px;
+    }
+
+    body.sidebar-recolhida #content {
+        margin-left: 76px;
+    }
+
+    /* Cabeçalho: título+ícone e botão empilham centralizados, sem o texto
+       do título (só cabe o utensílio + o botão de expandir). */
+    body.sidebar-recolhida .sidebar-header-topo {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    body.sidebar-recolhida .sidebar-header-texto {
+        display: none;
+    }
+
+    /* Cartão do usuário: nome/cargo somem, sobra só o botão de sair (ícone). */
+    body.sidebar-recolhida .user-profile-section {
+        justify-content: center;
+        margin-left: 8px;
+        margin-right: 8px;
+        padding: 10px 6px;
+    }
+
+    body.sidebar-recolhida .user-details {
+        display: none;
+    }
+
+    body.sidebar-recolhida .btn-sair-sidebar {
+        padding: 8px !important;
+        justify-content: center;
+    }
+
+    /* Rótulos de seção (ATENDIMENTO/PRODUÇÃO/ADMINISTRAÇÃO) não têm ícone
+       pra mostrar sozinhos — somem e sobra só o <hr> que já vinha antes de
+       cada um, funcionando como uma linha divisória fina entre os grupos. */
+    body.sidebar-recolhida .sidebar-section-label {
+        display: none;
+    }
+
+    body.sidebar-recolhida .sidebar-divider {
+        margin: 0 16px 10px 16px;
+    }
+
+    /* Links: só o ícone, centralizado. Os rótulos viram tooltip nativo
+       (atributo title) em vez do <span> visível. */
+    body.sidebar-recolhida .sidebar a {
+        position: relative;
+        justify-content: center;
+        padding: 14px 0;
+        gap: 0;
+    }
+
+    body.sidebar-recolhida .sidebar a span:not(.sidebar-badge) {
+        display: none;
+    }
+
+    body.sidebar-recolhida .sidebar a:hover,
+    body.sidebar-recolhida .sidebar a.active {
+        padding-left: 0;
+    }
+
+    /* Badge de contagem (Pedidos Prontos / Cozinha): sem espaço pro número
+       ao lado do texto, vira uma bolinha sobreposta no canto do ícone. */
+    body.sidebar-recolhida .sidebar-badge {
+        display: block;
+        position: absolute;
+        top: 8px;
+        right: 20px;
+        min-width: 0;
+        width: 10px;
+        height: 10px;
+        padding: 0;
+        margin-left: 0;
+        font-size: 0;
+        line-height: 0;
+        border: 2px solid #1a252f;
     }
 }

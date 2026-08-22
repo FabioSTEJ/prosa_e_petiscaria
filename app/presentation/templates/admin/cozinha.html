@@ -7,16 +7,23 @@
 {% block content %}
 <div class="kds-container">
 
-    <div class="card-header-destaque">
+    <button type="button" id="kds-panel-toggle" class="kds-panel-toggle"
+            title="Ativar modo painel (tela cheia)" aria-pressed="false"
+            aria-label="Ativar modo painel: esconde o menu e deixa só os pedidos em tela cheia">
+        <i class="fas fa-expand" aria-hidden="true"></i>
+        <span class="kds-panel-toggle-texto">Modo Painel</span>
+    </button>
+
+    <div class="kds-header-page">
         <div class="header-info">
             <h2>Gestão da Cozinha 👨‍🍳</h2>
-            <p>Controle em tempo real dos pedidos em preparo.</p>
+            <p class="kds-subtitulo">Controle em tempo real dos pedidos em preparo.</p>
         </div>
 
-        <div class="badge-status-container">
-            <span class="status-badge badge-ocupada">🕒 Pendente</span>
-            <span class="status-badge" style="background: rgba(243,156,18,0.1); color: #f39c12; border: 1px solid #f39c12;">🔥 Preparo</span>
-            <span class="status-badge badge-livre">✅ Pronto</span>
+        <div class="kds-legenda" aria-label="Legenda das cores dos pedidos">
+            <span class="kds-legenda-item"><span class="kds-dot kds-dot-pendente"></span>Pendente</span>
+            <span class="kds-legenda-item"><span class="kds-dot kds-dot-preparo"></span>Preparo</span>
+            <span class="kds-legenda-item"><span class="kds-dot kds-dot-pronto"></span>Pronto</span>
         </div>
     </div>
 
@@ -27,8 +34,12 @@
             <div class="card-pedido-kds {{ classe_status }}">
                 <div class="kds-header">
                     <div class="kds-mesa-badge">
-                        <small style="color: #7f8c8d; font-weight: bold;">MESA</small>
-                        <span class="kds-mesa-numero">{{ p.mesa_rel.numero }}</span>
+                        <div class="kds-mesa-topo">
+                            <small style="color: #7f8c8d; font-weight: bold;">MESA</small>
+                            <span class="kds-status-pill {{ classe_status|replace('borda-', 'pill-') }}">{{ p.status }}</span>
+                        </div>
+                        <span class="kds-mesa-numero">{{ p.comanda_rel.mesa_rel.numero }}</span>
+                        <small class="kds-comanda-nome">{{ p.comanda_rel.nome }}</small>
                     </div>
                     <div class="kds-timer">
                         ⏳ Há
@@ -120,5 +131,117 @@
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 5000);
     }
+</script>
+
+<script>
+    // Modo painel: pensado pra um tablet fixo na parede/bancada da cozinha —
+    // esconde sidebar/topbar e o cabeçalho da página (mantendo só a legenda
+    // de cores), e opcionalmente também aciona o fullscreen real do
+    // navegador (some com barra de endereço/abas), quando o navegador
+    // suportar a Fullscreen API.
+    (function () {
+        const CHAVE_STORAGE = 'kds-modo-painel';
+
+        const botao = document.getElementById('kds-panel-toggle');
+        if (!botao) return;
+
+        const icone = botao.querySelector('i');
+        const texto = botao.querySelector('.kds-panel-toggle-texto');
+
+        function elementoEmFullscreen() {
+            return document.fullscreenElement || document.webkitFullscreenElement || null;
+        }
+
+        const suportaFullscreen = !!(
+            document.documentElement.requestFullscreen ||
+            document.documentElement.webkitRequestFullscreen
+        );
+
+        function pedirFullscreen() {
+            const el = document.documentElement;
+            if (el.requestFullscreen) return el.requestFullscreen();
+            if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+            return Promise.reject(new Error('Fullscreen API indisponível neste navegador.'));
+        }
+
+        function sairDoFullscreen() {
+            if (document.exitFullscreen) return document.exitFullscreen();
+            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+            return Promise.resolve();
+        }
+
+        // Aplica (ou remove) o modo painel visualmente e guarda a preferência,
+        // porque a tela recarrega sozinha a cada novo pedido (socket) e o
+        // tablet preso na parede não pode "voltar" a mostrar o menu sozinho
+        // depois de um recarregamento.
+        function aplicarEstadoPainel(ativo) {
+            document.body.classList.toggle('kds-modo-painel', ativo);
+            try {
+                localStorage.setItem(CHAVE_STORAGE, ativo ? '1' : '0');
+            } catch (erro) {
+                // Armazenamento indisponível (modo privado etc.) — o toggle
+                // manual ainda funciona normalmente nessa mesma sessão.
+            }
+
+            botao.setAttribute('aria-pressed', String(ativo));
+            botao.title = ativo ? 'Sair do modo painel' : 'Ativar modo painel (tela cheia)';
+            if (icone) {
+                icone.classList.toggle('fa-expand', !ativo);
+                icone.classList.toggle('fa-compress', ativo);
+            }
+            if (texto) {
+                texto.textContent = ativo ? 'Sair do Painel' : 'Modo Painel';
+            }
+        }
+
+        botao.addEventListener('click', function () {
+            const painelAtivo = document.body.classList.contains('kds-modo-painel');
+
+            if (!painelAtivo) {
+                aplicarEstadoPainel(true);
+                if (suportaFullscreen) {
+                    pedirFullscreen().catch(function () {
+                        // Navegador recusou o fullscreen (ex.: sem interação
+                        // direta reconhecida, ou API indisponível) — o modo
+                        // painel via CSS continua funcionando sozinho.
+                    });
+                }
+            } else {
+                aplicarEstadoPainel(false);
+                if (suportaFullscreen && elementoEmFullscreen()) {
+                    sairDoFullscreen().catch(function () {});
+                }
+            }
+        });
+
+        // O usuário pode sair do fullscreen a qualquer momento pelo Esc, fora
+        // do nosso controle — sincroniza o modo painel com o estado real do
+        // fullscreen pra não deixar a interface escondida (ou visível) em
+        // desacordo com o que o navegador está mostrando de fato.
+        function aoMudarFullscreen() {
+            if (!elementoEmFullscreen() && document.body.classList.contains('kds-modo-painel')) {
+                aplicarEstadoPainel(false);
+            }
+        }
+        document.addEventListener('fullscreenchange', aoMudarFullscreen);
+        document.addEventListener('webkitfullscreenchange', aoMudarFullscreen);
+
+        // Restaura a preferência ao carregar/recarregar a página (novo
+        // pedido dispara location.reload() em outro listener desta mesma
+        // tela). Não tenta reabrir o fullscreen sozinho aqui porque
+        // navegadores exigem um gesto direto do usuário para isso — só
+        // reaplica o modo painel via CSS, que é o que garante a tela limpa
+        // no tablet fixo mesmo quando o fullscreen real não sobrevive ao
+        // recarregamento.
+        let preferePainel = false;
+        try {
+            preferePainel = localStorage.getItem(CHAVE_STORAGE) === '1';
+        } catch (erro) {
+            // Sem acesso a localStorage — começa sempre desligado.
+        }
+        if (preferePainel || elementoEmFullscreen()) {
+            aplicarEstadoPainel(true);
+        }
+    })();
 </script>
 {% endblock %}

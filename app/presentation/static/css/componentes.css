@@ -2,9 +2,9 @@
 .card-header-destaque {
     margin-bottom: 25px;
     padding: 20px;
-    border-left: 6px solid #e67e22;
-    background: linear-gradient(to right, #ffffff, #fffaf5);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
     border-radius: 12px;
 }
 
@@ -133,6 +133,109 @@
     border-color: rgba(220, 53, 69, 0.3);
 }
 
+/* --- CABEÇALHO COMPACTO DE PÁGINA (COZINHA + MAPA DE MESAS DO GARÇOM) ---
+   Nasceu em cozinha.html (daí o prefixo "kds-", de Kitchen Display System)
+   e foi generalizado pra painel.html porque as duas telas têm o mesmo
+   problema: são olhadas de relance, no celular, o dia todo — cada pixel
+   gasto no cabeçalho é espaço a menos mostrando conteúdo real (pedidos ou
+   mesas). Substitui .card-header-destaque + .badge-status-container nessas
+   duas telas; as outras páginas de admin continuam usando o padrão antigo.
+   Uso: <div class="kds-header-page"><div class="header-info"><h2>..</h2>
+   <p class="kds-subtitulo">..</p></div><div class="kds-legenda">
+   <span class="kds-legenda-item"><span class="kds-dot kds-dot-X"></span>
+   Rótulo</span>...</div></div> */
+.kds-header-page {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 14px;
+    padding: 12px 18px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+}
+
+.kds-header-page .header-info {
+    min-width: 0;
+}
+
+.kds-header-page h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
+
+.kds-header-page .kds-subtitulo {
+    margin: 2px 0 0 0;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+}
+
+/* Legenda de status como bolinhas coloridas + texto — muito mais fina que
+   os badges grandes (.status-badge) usados nas outras telas de admin. */
+.kds-legenda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.kds-legenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.kds-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.kds-dot-pendente { background: #dc3545; }
+.kds-dot-preparo  { background: #f39c12; }
+.kds-dot-pronto   { background: #28a745; }
+.kds-dot-ocupada  { background: #dc3545; }
+.kds-dot-livre    { background: #28a745; }
+
+@media (max-width: 767px) {
+    .kds-header-page {
+        padding: 10px 14px;
+        gap: 4px 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+    .kds-header-page h2 { font-size: 1.05rem; }
+    .kds-header-page .kds-subtitulo { font-size: 0.78rem; }
+    .kds-legenda { gap: 10px; }
+    .kds-legenda-item { font-size: 0.68rem; }
+}
+
+@media (max-width: 480px) {
+    .kds-header-page {
+        padding: 8px 12px;
+        margin-bottom: 8px;
+    }
+    .kds-header-page h2 { font-size: 0.95rem; }
+    .kds-header-page .kds-subtitulo { display: none; }
+    .kds-legenda { gap: 8px; }
+    .kds-legenda-item { font-size: 0.62rem; gap: 4px; }
+    .kds-dot { width: 7px; height: 7px; }
+}
+
 .badge-categoria {
     display: inline-block;
     background: #f1f2f6;
@@ -141,6 +244,42 @@
     border-radius: 4px;
     font-size: 0.7rem;
     font-weight: 600;
+}
+
+/* Selo "Direto" (itens que pulam a fila da cozinha) e afins */
+.badge-direto {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(52, 152, 219, 0.12);
+    color: #2471a3;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* --- COMPONENTE: CAMPO DE BUSCA/FILTRO RÁPIDO --- */
+/* Usado nas barras de busca do cardápio (admin) e no seletor de produto do
+   lançamento de item (garçom) — dá um retorno visual de foco consistente
+   com o resto dos formulários do sistema. */
+.input-busca-rapida {
+    border: 1.5px solid #dcdde1 !important;
+    background-color: #fcfcfc;
+    color: #2f3640;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input-busca-rapida:focus {
+    outline: none;
+    border-color: #e67e22 !important;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.12);
 }
 
 /* --- COMPONENTE: MAPA DE MESAS --- */
@@ -154,11 +293,12 @@
 }
 
 .card-mesa {
-    height: 120px;
+    min-height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 8px 6px;
     border-radius: 15px;
     text-decoration: none;
     color: white !important;
@@ -171,6 +311,11 @@
 .card-mesa:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.card-mesa:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .disponivel { background: linear-gradient(135deg, #28a745, #218838); }
@@ -467,36 +612,66 @@
 }
 
 .header-subtitle-container {
-    margin-top: 8px; 
-    display: flex; 
-    align-items: center; 
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
     gap: 10px;
 }
 
 .badge-data-atual {
-    background: #2c3e50; 
-    color: white; 
-    padding: 4px 12px; 
-    border-radius: 20px; 
-    font-size: 0.85rem; 
+    background: #2c3e50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
 }
 
+/* Título e subtítulo no mesmo nível/linha, em vez de empilhados. */
+.header-subtitulo-inline {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin-left: 6px;
+}
+
 .filtro-data-inline {
-    display: flex; 
-    gap: 10px; 
-    align-items: center; 
-    background: #fff; 
-    padding: 8px; 
-    border-radius: 10px; 
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #fff;
+    padding: 8px;
+    border-radius: 10px;
     border: 1px solid #dee2e6;
 }
 
+/* Filtro de período (data início/fim) — mesma caixa do filtro de data
+   única, com um separador textual entre os dois campos. */
+.filtro-periodo-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    flex-wrap: wrap;
+}
+
+.filtro-periodo-separador {
+    color: #95a5a6;
+    font-size: 0.8rem;
+}
+
 .input-data-clean {
-    border: none; 
-    outline: none; 
-    padding: 5px; 
+    border: none;
+    outline: none;
+    padding: 5px;
     color: #495057;
+}
+
+.input-data-br {
+    width: 100px;
 }
 
 .btn-search-icon {

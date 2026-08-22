@@ -2,8 +2,13 @@
 
 {% block content %}
 <div class="container-admin">
-    <h2><i class="fas fa-table"></i> Gerenciar Salão</h2>
-    
+    <div class="kds-header-page">
+        <div class="header-info">
+            <h2><i class="fas fa-table"></i> Gerenciar Salão</h2>
+            <p>Defina a quantidade de mesas e acompanhe o status de cada uma em tempo real.</p>
+        </div>
+    </div>
+
     <div class="card-form">
         <h3><i class="fas fa-tools"></i> Configurar Capacidade</h3>
         <form method="POST">
@@ -17,31 +22,41 @@
 
     <hr class="divisor">
 
-    <h3><i class="fas fa-map-marked-alt"></i> Mapa em Tempo Real</h3>
-    
-    <div class="grid-mesas">
-        {% for m in mesas %}
-        {% set classe_status = 'disponivel' if m.status == 'Livre' else 'ocupada' %}
+    <div class="card-form">
+        <h3><i class="fas fa-map-marked-alt"></i> Mapa em Tempo Real</h3>
 
-        <div class="card-mesa {{ classe_status }}" style="{{ 'opacity: 0.5; filter: grayscale(1);' if not m.ativa else '' }}">
-            <div class="mesa-numero">{{ m.numero }}</div>
-            <div class="mesa-status">{{ m.status if m.ativa else 'Desativada' }}</div>
+        <div class="grid-mesas">
+            {% for m in mesas %}
+            {% set classe_status = 'disponivel' if m.status == 'Livre' else 'ocupada' %}
 
-            {% if m.status == 'Ocupada' %}
-            <div class="mesa-consumo-preview">
-                R$ {{ "%.2f"|format(consumos[m.id]) }}
+            <div class="card-mesa {{ classe_status }}" style="{{ 'opacity: 0.5; filter: grayscale(1);' if not m.ativa else '' }}">
+                <div class="mesa-numero">{{ m.numero }}</div>
+                <div class="mesa-status">{{ m.status if m.ativa else 'Desativada' }}</div>
+
+                {% if m.grupo_id %}
+                <div style="font-size: 0.7rem; font-weight: 700; margin-top: 4px; padding: 2px 8px; border-radius: 10px; background: rgba(0,0,0,0.12); display: inline-block;">
+                    <i class="fas fa-link"></i> Grupo #{{ m.grupo_id }}
+                    {% set outras = grupos.get(m.grupo_id, []) | reject('equalto', m.numero) | list %}
+                    {% if outras %} ({{ outras | join(', ') }}){% endif %}
+                </div>
+                {% endif %}
+
+                {% if m.status == 'Ocupada' %}
+                <div class="mesa-consumo-preview">
+                    R$ {{ "%.2f"|format(consumos[m.id]) }}
+                </div>
+                {% endif %}
+
+                {% if m.status != 'Ocupada' %}
+                <a href="{{ url_for('admin.alternar_ativa_mesa', mesa_id=m.id) }}"
+                   style="display: block; margin-top: 8px; font-size: 0.75rem; text-decoration: underline; color: inherit;"
+                   onclick="return confirm('{{ 'Reativar' if not m.ativa else 'Desativar' }} a Mesa {{ m.numero }}?')">
+                    {{ 'Reativar' if not m.ativa else 'Desativar' }}
+                </a>
+                {% endif %}
             </div>
-            {% endif %}
-
-            {% if m.status != 'Ocupada' %}
-            <a href="{{ url_for('admin.alternar_ativa_mesa', mesa_id=m.id) }}"
-               style="display: block; margin-top: 8px; font-size: 0.75rem; text-decoration: underline; color: inherit;"
-               onclick="return confirm('{{ 'Reativar' if not m.ativa else 'Desativar' }} a Mesa {{ m.numero }}?')">
-                {{ 'Reativar' if not m.ativa else 'Desativar' }}
-            </a>
-            {% endif %}
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}

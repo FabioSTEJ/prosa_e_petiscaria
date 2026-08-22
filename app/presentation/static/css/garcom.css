@@ -1,4 +1,59 @@
-/* --- SEÇÕES DO PAINEL DE MESAS --- */
+/* --- CONTAINER PADRÃO DAS TELAS DO GARÇOM --- */
+/* Usado em home, painel de mesas, abrir mesa, detalhe do pedido e pedidos
+   prontos. Sem isso as telas (pensadas pra celular/tablet) esticavam até a
+   largura total do #content em monitores grandes, deixando cards e forms
+   desproporcionalmente largos. */
+.container-mobile {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Feedback tátil padrão para os botões de ação cheios (largura 100%) das
+   telas do garçom — sem isso eles ficavam com cara de <button> puro, sem
+   nenhuma resposta visual ao toque/clique. */
+.btn-cheio {
+    transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+}
+.btn-cheio:hover { filter: brightness(1.08); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-cheio:active { transform: scale(0.98); filter: brightness(0.97); }
+
+/* --- CABEÇALHO DO MAPA DE MESAS (.kds-header-page, ver componentes.css) ---
+   Agrupa o botão "Unir Mesas" e a legenda de status do lado direito do
+   cabeçalho compacto, um ao lado do outro. */
+.kds-header-acoes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.kds-btn-unir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #34495e;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.kds-btn-unir:hover { background: #2c3e50; }
+.kds-btn-unir:active { transform: scale(0.96); }
+
+/* --- SEÇÕES DO PAINEL DE MESAS ---
+   Cada seção (Ocupadas/Disponíveis) também leva a classe .card-form
+   (componentes.css) pra virar um card branco com sombra, no mesmo padrão
+   visual do resto do site — antes era só o título + grid direto no fundo
+   da página. */
 .secao-mesas {
     margin-bottom: 30px;
 }
@@ -16,6 +71,8 @@
 
 .ocupadas-titulo { color: #c0392b; }
 .livres-titulo   { color: #27ae60; }
+.indisponiveis-titulo { color: #95a5a6; }
+.comandas-titulo { color: #3498db; }
 
 .secao-count {
     background: rgba(0,0,0,0.08);
@@ -23,6 +80,96 @@
     border-radius: 20px;
     font-size: 0.78rem;
     font-weight: 700;
+}
+
+/* --- LISTA DE COMANDAS DA MESA (garcom/comandas_mesa.html) ---
+   Mesmo espírito de compactação já aplicado aos itens de
+   pedidos_prontos.html (.card-pronto): linha fina com traço colorido à
+   esquerda em vez de card com sombra própria — aqui a "sombra própria" já
+   foi removida a favor do .card-form que envolve a lista inteira. Reduz
+   bastante a fonte/padding generosos que a tela tinha antes (1.15rem/
+   1.2rem, 18px 20px), mantendo altura de toque confortável (~44px) já que
+   o card inteiro continua sendo o link clicável. */
+.lista-comandas-mesa {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-comanda-mesa {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid #3498db;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none !important;
+    color: inherit;
+    transition: background 0.15s;
+}
+
+.card-comanda-mesa:last-child { border-bottom: none; }
+.card-comanda-mesa:hover { background: #fafafa; }
+.card-comanda-mesa:active { background: #f2f2f2; }
+
+.comanda-mesa-info { min-width: 0; }
+
+.comanda-mesa-nome {
+    font-size: 0.92rem;
+    color: #2c3e50;
+    display: block;
+}
+
+.comanda-mesa-meta {
+    font-size: 0.72rem;
+    color: #7f8c8d;
+    margin-top: 3px;
+}
+
+.comanda-mesa-total {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #27ae60;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* --- CARD ÚNICO DE MESAS UNIDAS NO MAPA ---
+   Mesas do mesmo grupo (unidas) não viram mais N cards dentro de um
+   wrapper — o controller (`_agrupar_mesas_unidas`/`_agregar_bloco`) já
+   soma consumo/comandas e escolhe o alerta mais urgente entre elas, e o
+   template renderiza isso como UM .card-mesa só, com "01, 04" no lugar de
+   um número único. Ocupa 2 colunas do grid (`grid-column: span 2`) pra
+   caber o número composto com folga — como os cards são pequenos
+   (min-width 90-105px), até em celular normalmente há colunas de sobra
+   pra isso não forçar rolagem horizontal. */
+.card-mesa-unida {
+    grid-column: span 2;
+}
+
+.mesa-numero-unida {
+    font-size: 1.3rem;
+    line-height: 1.15;
+    word-break: break-word;
+}
+
+/* Ícone discreto no canto oposto ao alerta, só reforçando visualmente que
+   é uma mesa unida — a informação principal já está no número composto. */
+.mesa-unida-icone {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    color: #34495e;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    z-index: 2;
 }
 
 /* --- ALERTAS DE PEDIDO NO MAPA --- */
@@ -33,9 +180,17 @@
 
 .alerta-pedido-mapa {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.3rem;
+    top: -6px;
+    right: -6px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    font-size: 1.05rem;
     z-index: 2;
 }
 
@@ -64,84 +219,131 @@
 }
 
 /* ─── TELA DE PEDIDOS PRONTOS ─── */
+/* Cada item pronto agora vive aninhado dentro do card branco do bloco de
+   mesa (.grupo-mesa-pronta.card-form) e do subgrupo de comanda — por isso
+   não leva mais fundo/sombra/cantos arredondados próprios (isso criava um
+   efeito repetitivo de "card dentro de card"). Vira uma linha simples,
+   separada da seguinte por uma borda inferior fina, com um traço verde à
+   esquerda só pra sinalizar "aguardando retirada" sem competir com o
+   card externo. */
 .card-pronto {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-    border-left: 5px solid #27ae60;
-    padding: 16px 20px;
-    margin-bottom: 14px;
+    border-left: 3px solid #27ae60;
+    padding: 6px 0 6px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    transition: box-shadow 0.2s;
+    gap: 14px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.15s;
+}
+
+.card-pronto:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 @media (max-width: 480px) {
     .card-pronto {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+    .pronto-acoes {
+        gap: 6px;
     }
     .btn-entregar-garcom {
-        flex-direction: row;
-        justify-content: center;
-        width: 100%;
-        padding: 14px;
-        font-size: 0.95rem;
+        width: auto;
     }
     .grid-mesas {
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 10px;
     }
-    .card-mesa { height: 100px; }
+    .card-mesa { min-height: 100px; }
     .mesa-numero { font-size: 1.5rem; }
 }
 
 .card-pronto:hover {
-    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    background: #fafafa;
 }
 
-.pronto-mesa {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #2c3e50;
-}
-
+/* Nome do item mais compacto — o dono pediu explicitamente pra caber mais
+   itens na tela sem tanta rolagem; ainda assim mantido em tamanho legível
+   a distância de braço no celular. `flex: 1 1 auto` + `min-width: 0` fazem
+   ele ocupar o espaço sobrando à esquerda e, se o nome for comprido,
+   quebrar em 2 linhas dentro do próprio espaço — sem empurrar o grupo
+   tempo+botão (.pronto-acoes) da linha, que fica sempre alinhado à
+   direita, numa única linha. */
 .pronto-item {
-    font-size: 1rem;
+    font-size: 0.88rem;
     color: #34495e;
-    margin: 4px 0;
+    margin: 0;
+    line-height: 1.25;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
+/* Tempo ("X min atrás") saiu de baixo do nome do item e agora fica
+   agrupado com o botão "Entregue" à direita da linha (ver .pronto-acoes),
+   nunca quebrando linha sozinho. */
 .pronto-tempo {
-    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
     color: #95a5a6;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
+/* Agrupa tempo + botão "Entregue" num único bloco à direita da linha do
+   item — sempre juntos na mesma linha, mesmo em telas estreitas (só o
+   nome do item, à esquerda, tem permissão pra quebrar em 2 linhas). */
+.pronto-acoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Botão "Entregue" compacto (ícone ao lado do texto, não empilhado) —
+   reduz bastante a altura da linha, mas mantém min-height ~44px pra não
+   virar um alvo de toque pequeno demais numa tela usada com o dedo o dia
+   inteiro pelo garçom. */
 .btn-entregar-garcom {
     background: linear-gradient(135deg, #27ae60, #2ecc71);
     color: #fff !important;
     text-decoration: none !important;
-    padding: 12px 18px;
-    border-radius: 10px;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-weight: 700;
     text-align: center;
-    font-size: 0.82rem;
-    min-width: 80px;
+    font-size: 0.78rem;
+    min-width: 76px;
+    min-height: 44px;
+    box-sizing: border-box;
     flex-shrink: 0;
     transition: transform 0.1s, box-shadow 0.2s;
     box-shadow: 0 4px 10px rgba(39,174,96,0.3);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-entregar-garcom i {
+    font-size: 1rem !important;
 }
 
 .btn-entregar-garcom:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(39,174,96,0.4);
+}
+
+.btn-entregar-garcom:active {
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 2px 6px rgba(39,174,96,0.35);
 }
 
 .badge-pronto-count {
@@ -186,4 +388,81 @@
     font-size: 0.85rem;
     font-weight: 700;
     margin-top: 6px;
+}
+
+/* --- BADGE DE COMANDAS MÚLTIPLAS NO MAPA ---
+   (o badge "Unida a X, Y" que existia aqui foi removido: mesas unidas
+   agora viram um único .card-mesa-unida com o número composto "01, 04" —
+   a informação já está no próprio número do card, não precisa mais de um
+   badge de texto repetindo isso.) */
+.badge-comandas-mesa {
+    font-size: 0.68rem;
+    font-weight: 700;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    color: inherit;
+}
+
+/* --- AGRUPAMENTO POR MESA NA TELA DE PEDIDOS PRONTOS --- */
+/* Cada bloco de mesa (mesa avulsa ou grupo de mesas unidas) vira UM card
+   branco (`.card-form`, componentes.css) agregando título da mesa,
+   subgrupos de comanda e itens — mesmo padrão visual já usado nas seções
+   Ocupadas/Disponíveis de painel.html. Cada item individual continua com
+   seu próprio botão "Entregue", mas sem fundo/sombra própria (ver
+   .card-pronto) pra não competir com o card externo. */
+.grupo-mesa-pronta.card-form {
+    margin-bottom: 20px;
+}
+
+.titulo-grupo-mesa-pronta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #3498db;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #eaf4fc;
+}
+
+.contador-grupo-mesa-pronta {
+    font-weight: 600;
+    color: #95a5a6;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.85rem;
+}
+
+/* Subgrupo por comanda dentro do bloco de mesa — nível hierárquico
+   abaixo do título da mesa/grupo unido. Uma mesa unida (ex.: 01+02+04)
+   pode ter várias comandas simultâneas, cada uma com seus próprios itens
+   prontos; a borda esquerda + indentação deixa claro que isso é um
+   "sub-nível" dentro do bloco de mesa, não um bloco de mesa novo. */
+.subgrupo-comanda-pronta {
+    margin-left: 14px;
+    padding-left: 14px;
+    border-left: 3px solid #eaf4fc;
+    margin-bottom: 16px;
+}
+
+.subgrupo-comanda-pronta:last-child {
+    margin-bottom: 0;
+}
+
+.titulo-subgrupo-comanda {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin: 0 0 8px 0;
 }

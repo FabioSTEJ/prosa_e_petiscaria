@@ -5,27 +5,23 @@
 {% block content %}
 <div class="container-admin">
 
-    <div class="card-form" style="margin-bottom: 30px; padding: 25px; border-left: 6px solid #2c3e50; background: linear-gradient(to right, #ffffff, #f8f9fa); box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-        <div class="header-flex-container" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
-            <div>
-                <h1 style="margin: 0; color: #2c3e50; font-size: 1.8rem; letter-spacing: -0.5px;">
-                    Histórico de Vendas 📜
-                </h1>
-                <div class="header-subtitle-container" style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
-                    <span class="badge-data-atual" style="background: #2c3e50; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                        {{ data_selecionada }}
-                    </span>
-                    <span style="color: #7f8c8d; font-size: 0.9rem;">| Exibindo resultados do dia</span>
-                </div>
+    <div class="kds-header-page">
+        <div class="header-info">
+            <h2>Histórico de Vendas 📜</h2>
+            <div class="header-subtitle-container">
+                <span class="badge-data-atual">
+                    {{ data_selecionada }}
+                </span>
+                <span style="color: #7f8c8d; font-size: 0.9rem;">| Exibindo resultados do dia</span>
             </div>
-
-            <form action="{{ url_for('admin.historico_vendas_view') }}" method="GET" class="filtro-data-inline" style="display: flex; gap: 10px; align-items: center; background: #fff; padding: 8px; border-radius: 10px; border: 1px solid #dee2e6;">
-                <input type="date" name="data_venda" value="{{ data_selecionada }}" class="input-data-clean" style="border: none; outline: none; padding: 5px; color: #495057;">
-                <button type="submit" class="btn-success btn-search-icon" style="padding: 8px 18px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; width: auto;">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
         </div>
+
+        <form action="{{ url_for('admin.historico_vendas_view') }}" method="GET" class="filtro-data-inline" style="background: #f8f9fa;">
+            <input type="date" name="data_venda" value="{{ data_selecionada }}" class="input-data-clean">
+            <button type="submit" class="btn-success btn-search-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
     </div>
 
     <div class="grid-historico-vendas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
@@ -69,13 +65,18 @@
                             <span class="badge-mesa-tabela" style="background: #2c3e50; color: white; padding: 4px 10px; border-radius: 4px;">
                                 Mesa {{ venda.mesa_numero }}
                             </span>
+                            {% if venda.comanda_nome %}
+                            <div style="margin-top: 4px; font-size: 0.78rem; color: #7f8c8d;">
+                                <i class="fas fa-clipboard-list"></i> {{ venda.comanda_nome }}
+                            </div>
+                            {% endif %}
                         </td>
                         <td style="padding: 15px; color: #2c3e50;">{{ venda.aberta_por_nome }}</td>
                         <td style="padding: 15px; color: #28a745; font-weight: bold;">R$ {{ "%.2f"|format(venda.valor_total) }}</td>
                         <td style="padding: 15px; text-align: center;">
                             <button class="btn-voltar"
                                     style="padding: 8px 15px; font-size: 0.8rem; background-color: #34495e; border-radius: 8px;"
-                                    onclick="abrirDetalhesVenda('{{ venda.mesa_numero }}', '{{ venda.observacoes }}', 'R$ {{ "%.2f"|format(venda.valor_total) }}', '{{ venda.data_abertura.strftime("%d/%m/%Y %H:%M") }}', '{{ venda.data_fechamento.strftime("%d/%m/%Y %H:%M") }}')"
+                                    onclick="abrirDetalhesVenda('{{ venda.mesa_numero }}', '{{ venda.observacoes }}', 'R$ {{ "%.2f"|format(venda.valor_total) }}', '{{ venda.data_abertura.strftime("%d/%m/%Y %H:%M") }}', '{{ venda.data_fechamento.strftime("%d/%m/%Y %H:%M") }}', '{{ venda.comanda_nome or '' }}')"
                                     title="Ver Itens Consumidos">
                                 <i class="fas fa-search"></i> Ver Itens
                             </button>
@@ -127,10 +128,14 @@
 <script>
 let _vendaAtual = {};
 
-function abrirDetalhesVenda(mesa, observacoes, total, abertura, fechamento) {
-    _vendaAtual = { mesa, observacoes, total, abertura, fechamento };
+function abrirDetalhesVenda(mesa, observacoes, total, abertura, fechamento, comandaNome) {
+    _vendaAtual = { mesa, observacoes, total, abertura, fechamento, comandaNome };
 
-    document.getElementById('modalTitulo').innerText = "Detalhes da Mesa " + mesa;
+    // Vendas fechadas antes da migração de comandas não têm esse campo
+    // preenchido — trata graciosamente, sem quebrar o título do modal.
+    document.getElementById('modalTitulo').innerText = comandaNome
+        ? "Detalhes da Mesa " + mesa + " · " + comandaNome
+        : "Detalhes da Mesa " + mesa;
     document.getElementById('modalAbertura').innerText = abertura;
     document.getElementById('modalFechamento').innerText = fechamento;
     document.getElementById('modalTotal').innerText = "Total: " + total;
@@ -147,8 +152,9 @@ function fecharModal() {
 }
 
 function imprimirComanda() {
-    const { mesa, total, abertura, fechamento } = _vendaAtual;
+    const { mesa, total, abertura, fechamento, comandaNome } = _vendaAtual;
     const itensHtml = document.getElementById('modalCorpoItens').innerHTML;
+    const subtituloMesa = comandaNome ? `Mesa ${mesa} · ${comandaNome}` : `Mesa ${mesa}`;
 
     const janela = window.open('', '_blank', 'width=420,height=600');
     janela.document.write(`
@@ -156,7 +162,7 @@ function imprimirComanda() {
         <html lang="pt-br">
         <head>
             <meta charset="UTF-8">
-            <title>Comanda - Mesa ${mesa}</title>
+            <title>Comanda - ${subtituloMesa}</title>
             <style>
                 body { font-family: 'Segoe UI', sans-serif; padding: 24px 28px; color: #222; max-width: 380px; margin: 0 auto; }
                 .topo { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 12px; margin-bottom: 16px; }
@@ -171,7 +177,7 @@ function imprimirComanda() {
         <body>
             <div class="topo">
                 <h2>Prosa &amp; Petiscaria</h2>
-                <p>Mesa ${mesa}</p>
+                <p>${subtituloMesa}</p>
             </div>
             <div class="horarios">
                 <div>🟢 <strong>Abertura:</strong> ${abertura}</div>

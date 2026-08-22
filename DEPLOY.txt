@@ -119,8 +119,23 @@ RECRIAR O ADMIN MANUALMENTE (caso tenha sido deletado):
   (apos isso, login: admin / 123 e o sistema pede troca de senha)
 
 ATUALIZAR O SITE (nova versao do codigo):
-  docker compose down
-  docker compose up --build -d
+  git pull origin main
+  docker compose build
+  docker compose run --rm web python scripts/migrar_tudo.py
+  docker compose up -d
+
+  IMPORTANTE: nunca pule o passo do "migrar_tudo.py". Sempre que uma
+  atualizacao adiciona um campo/tabela nova, o banco de dados existente
+  (com os pedidos, mesas e vendas ja cadastrados) precisa desse passo pra
+  ganhar as colunas novas SEM perder nenhum dado. Reiniciar direto com
+  "docker compose up --build -d" (sem migrar antes) pode derrubar o site
+  com erro de "coluna nao existe".
+
+  O migrar_tudo.py roda TODOS os scripts scripts/migrar_*.py em sequencia.
+  Cada um deles verifica sozinho se ja foi aplicado e pula se sim — por
+  isso e seguro rodar esse comando em toda atualizacao, mesmo que nenhuma
+  migracao nova exista dessa vez (nesse caso ele so imprime "nada a migrar"
+  pra cada um e nao mexe em nada).
 
 
 ========================================================
@@ -138,5 +153,45 @@ ATUALIZAR O SITE (nova versao do codigo):
 - Para acessar de outros dispositivos na mesma rede (celulares,
   tablets, outros computadores), use o IP local do servidor:
   http://192.168.x.x:5500
+
+- NAO exponha a porta 5500 pra internet (sem port forwarding no roteador).
+  O acesso deve ficar restrito a rede local do estabelecimento.
+
+========================================================
+  PARA QUEM (OU QUAL IA) FOR ESCREVER UMA MIGRACAO NOVA
+========================================================
+
+Sempre que um model em app/core/models/ ganhar uma coluna/tabela nova E
+o banco de producao ja tiver dados reais, db.create_all() NAO alcanca essa
+tabela (so cria tabelas que ainda nao existem, nunca altera uma existente).
+E preciso escrever um script de migracao manual. Regras pra nao repetir os
+bugs que ja apareceram aqui:
+
+1. Nome do arquivo: scripts/migrar_<algo_descritivo>.py — o migrar_tudo.py
+   descobre e roda automaticamente qualquer scripts/migrar_*.py.
+
+2. IDEMPOTENTE DE VERDADE: verifique o estado real do banco antes de mudar
+   qualquer coisa (ex.: PRAGMA table_info pra checar se a coluna ja existe,
+   ou o flag "notnull" real de uma coluna). NUNCA confie em heuristica de
+   texto tipo "'coluna' in sql_da_tabela" — o nome da coluna aparece no SQL
+   mesmo quando ela ja esta do jeito certo, entao esse tipo de checagem
+   sempre da "precisa migrar" e a migracao roda toda vez sem necessidade.
+
+3. Se a migracao recriar uma tabela (necessario pra mudar nullable/tipo,
+   já que SQLite não suporta ALTER COLUMN): a lista de colunas do
+   CREATE TABLE ... _new tem que bater EXATAMENTE com o schema atual do
+   model, incluindo colunas adicionadas por migracoes anteriores. Uma
+   lista desatualizada apaga essas colunas (e os dados nelas) em silencio.
+   Prefira reler PRAGMA table_info(tabela_atual) e montar a copia de dados
+   dinamicamente em vez de hardcodar os nomes das colunas.
+
+4. Backup antes de qualquer alteracao destrutiva, com nome de arquivo
+   UNICO por script (ex.: comandas.db.backup.migrar_xyz) — se dois scripts
+   usarem o mesmo nome de backup, o segundo sobrescreve o backup do
+   primeiro e ele deixa de servir pra restaurar.
+
+5. Teste rodando scripts/migrar_tudo.py duas vezes seguidas contra uma
+   copia do banco antes de considerar pronto. A segunda vez tem que
+   imprimir "nada a migrar" pra tudo, sem recriar nenhuma tabela.
 
 ========================================================

@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import case
 from flask import render_template, request, redirect, url_for, flash
 from app.api.decorators import login_requerido
 from app.core.models import Usuario, Produto, Mesa, Pedido
@@ -12,7 +13,9 @@ from app.core.services.relatorio_service import RelatorioService
 
 @login_requerido(cargo_necessario='admin')
 def dashboard_view():
-    dados = RelatorioService.dashboard(request.args.get('data_pesquisa'))
+    dados = RelatorioService.dashboard(
+        request.args.get('data_inicio'), request.args.get('data_fim'),
+    )
     return render_template('admin/dashboard.html', **dados)
 
 
@@ -24,9 +27,16 @@ def historico_vendas_view():
 
 @login_requerido(cargo_necessario='cozinha')
 def painel_cozinha():
+    prioridade_status = case(
+        (Pedido.status == 'Pendente', 0),
+        (Pedido.status == 'Em Preparo', 1),
+        (Pedido.status == 'Pronto', 2),
+        else_=3,
+    )
     pedidos_ativos = Pedido.query.filter(
-        Pedido.status.in_(['Pendente', 'Em Preparo', 'Pronto'])
-    ).order_by(Pedido.data.asc()).all()
+        Pedido.status.in_(['Pendente', 'Em Preparo', 'Pronto']),
+        Pedido.precisa_preparo == True,
+    ).order_by(prioridade_status, Pedido.data.asc()).all()
     return render_template('admin/cozinha.html', pedidos=pedidos_ativos, now=datetime.now())
 
 
@@ -34,10 +44,12 @@ def painel_cozinha():
 def mudar_status(pedido_id, novo_status):
     try:
         pedido = PedidoService.mudar_status(pedido_id, novo_status)
+        comanda = pedido.comanda_rel
+        numero_mesa = comanda.mesa_rel.numero
         if novo_status == 'Cancelado':
-            flash(f"Item {pedido.item_nome} da Mesa {pedido.mesa_rel.numero} CANCELADO.", "warning")
+            flash(f"Item {pedido.item_nome} da Mesa {numero_mesa} / {comanda.nome} CANCELADO.", "warning")
         elif novo_status == 'Entregue':
-            flash(f"Item entregue na Mesa {pedido.mesa_rel.numero}.", "success")
+            flash(f"Item entregue na Mesa {numero_mesa} / {comanda.nome}.", "success")
     except ValueError as e:
         flash(str(e), "danger")
     return redirect(url_for('admin.painel_cozinha'))
@@ -101,14 +113,15 @@ def gerenciar_cardapio_view():
         preco_raw = request.form.get('preco', '')
         categoria = request.form.get('categoria', '')
         id_produto = request.form.get('id_produto', '')
+        precisa_preparo = request.form.get('precisa_preparo', 'sim') == 'sim'
         if nome and preco_raw:
             try:
                 preco = float(preco_raw)
                 if id_produto:
-                    CardapioService.atualizar(int(id_produto), nome, preco, categoria)
+                    CardapioService.atualizar(int(id_produto), nome, preco, categoria, precisa_preparo)
                     flash(f"Produto '{nome}' atualizado!")
                 else:
-                    CardapioService.adicionar(nome, preco, categoria)
+                    CardapioService.adicionar(nome, preco, categoria, precisa_preparo)
                     flash(f"Produto '{nome}' adicionado!")
             except ValueError:
                 flash("Preço inválido!")
@@ -143,7 +156,11 @@ def gerenciar_mesas_view():
         return redirect(url_for('admin.gerenciar_mesas_view'))
     mesas = Mesa.query.order_by(Mesa.numero).all()
     consumos = {m.id: m.calcular_total() for m in mesas}
-    return render_template("admin/mesas.html", mesas=mesas, consumos=consumos)
+    grupos = {}
+    for mesa in mesas:
+        if mesa.grupo_id:
+            grupos.setdefault(mesa.grupo_id, []).append(mesa.numero)
+    return render_template("admin/mesas.html", mesas=mesas, consumos=consumos, grupos=grupos)
 
 
 @login_requerido(cargo_necessario='admin')
