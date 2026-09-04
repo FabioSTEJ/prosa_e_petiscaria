@@ -49,7 +49,10 @@ class ComandaService:
             total = comanda.calcular_total()
             usuario_abriu = Usuario.query.get(comanda.aberta_por_id)
             nome_abriu = usuario_abriu.nome_exibicao if usuario_abriu else "Sistema"
-            resumo = ", ".join(f"{i.quantidade}x {i.item_nome}" for i in itens)
+            resumo = "|||".join(
+                f"{i.quantidade}::{i.item_nome}::{i.valor_unitario:.2f}::{i.valor_total:.2f}"
+                for i in itens
+            )
             db.session.add(Venda(
                 mesa_numero=mesa.numero,
                 comanda_nome=comanda.nome,
@@ -59,6 +62,7 @@ class ComandaService:
                 aberta_por_nome=nome_abriu,
                 fechada_por_id=usuario_id,
                 observacoes=resumo,
+                grupo_mesa_id=mesa.grupo_id,
             ))
             for item in itens:
                 item.status = 'Finalizado'

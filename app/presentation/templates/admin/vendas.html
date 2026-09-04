@@ -1,6 +1,62 @@
 {% extends "base_admin.html" %}
 
-{% block extra_css %}{% endblock %}
+{% block extra_css %}
+<style>
+    .tabela-itens {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .tabela-itens th,
+    .tabela-itens td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    .tabela-itens th {
+        color: #7f8c8d;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+    .tabela-itens td {
+        color: #2c3e50;
+    }
+    .tabela-itens td.col-num,
+    .tabela-itens th.col-num {
+        text-align: right;
+    }
+    .tabela-itens td.col-qtd,
+    .tabela-itens th.col-qtd {
+        text-align: center;
+    }
+    .tabela-itens tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .secao-titulo-comanda {
+        margin: 18px 0 8px;
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-top: 1px dashed #ccc;
+        padding-top: 12px;
+    }
+    .secao-titulo-comanda:first-child {
+        margin-top: 0;
+        border-top: none;
+        padding-top: 0;
+    }
+    .subtotal-comanda {
+        text-align: right;
+        font-style: italic;
+        color: #7f8c8d;
+        font-size: 0.82rem;
+        margin: 4px 0 0;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-admin">
@@ -55,7 +111,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for venda in vendas %}
+                    {% for linha in linhas %}
+                    {% if linha.tipo == 'individual' %}
+                    {% set venda = linha.venda %}
                     <tr style="border-bottom: 1px solid #f8f9fa;">
                         <td style="padding: 15px;">
                             <span class="user-main-name" style="font-weight: 700; color: #2c3e50;">{{ venda.data_fechamento.strftime('%d/%m/%Y') }}</span><br>
@@ -82,6 +140,33 @@
                             </button>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr style="border-bottom: 1px solid #f8f9fa;">
+                        <td style="padding: 15px;">
+                            <span class="user-main-name" style="font-weight: 700; color: #2c3e50;">{{ linha.data_fechamento.strftime('%d/%m/%Y') }}</span><br>
+                            <small class="text-muted">{{ linha.data_fechamento.strftime('%H:%M') }}</small>
+                        </td>
+                        <td style="padding: 15px;">
+                            <span class="badge-mesa-tabela" style="background: #2c3e50; color: white; padding: 4px 10px; border-radius: 4px;">
+                                Mesa {{ linha.mesas_label }}
+                            </span>
+                            <div style="margin-top: 4px; font-size: 0.78rem; color: #7f8c8d;">
+                                <i class="fas fa-clipboard-list"></i> {{ linha.sub_vendas | map(attribute='comanda_nome') | join(', ') }}
+                            </div>
+                        </td>
+                        <td style="padding: 15px; color: #2c3e50;">{{ linha.atendente_label }}</td>
+                        <td style="padding: 15px; color: #28a745; font-weight: bold;">R$ {{ "%.2f"|format(linha.total) }}</td>
+                        <td style="padding: 15px; text-align: center;">
+                            <button class="btn-voltar"
+                                    style="padding: 8px 15px; font-size: 0.8rem; background-color: #34495e; border-radius: 8px;"
+                                    data-sub-vendas='{{ linha.sub_vendas | tojson }}'
+                                    onclick="abrirDetalhesVendaGrupo(this, '{{ linha.mesas_label }}', 'R$ {{ "%.2f"|format(linha.total) }}', '{{ linha.data_abertura.strftime("%d/%m/%Y %H:%M") }}', '{{ linha.data_fechamento.strftime("%d/%m/%Y %H:%M") }}')"
+                                    title="Ver Itens Consumidos">
+                                <i class="fas fa-search"></i> Ver Itens
+                            </button>
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% else %}
                     <tr>
                         <td colspan="5" style="text-align: center; padding: 40px; color: #95a5a6;">
@@ -140,11 +225,100 @@ function abrirDetalhesVenda(mesa, observacoes, total, abertura, fechamento, coma
     document.getElementById('modalFechamento').innerText = fechamento;
     document.getElementById('modalTotal').innerText = "Total: " + total;
 
-    const textoItens = observacoes ? observacoes : "Nenhum item detalhado nesta venda.";
-    const itens = textoItens.split(',').map(i => i.trim()).filter(Boolean);
-    document.getElementById('modalCorpoItens').innerHTML = itens.map(i => '• ' + i).join('<br>');
+    document.getElementById('modalCorpoItens').innerHTML = renderizarItensVenda(observacoes);
 
     document.getElementById('modalDetalhes').style.display = "block";
+}
+
+// Análoga a abrirDetalhesVenda, mas pra um grupo de mesas unidas fechadas
+// no mesmo dia: `button` é o próprio botão clicado, de onde lemos o JSON
+// serializado das sub-vendas (uma comanda por mesa/cliente do grupo).
+function abrirDetalhesVendaGrupo(button, mesasLabel, total, abertura, fechamento) {
+    const subVendas = JSON.parse(button.dataset.subVendas);
+
+    _vendaAtual = { mesa: mesasLabel, total, abertura, fechamento, comandaNome: null };
+
+    document.getElementById('modalTitulo').innerText = "Detalhes da Mesa " + mesasLabel + " (mesas unidas)";
+    document.getElementById('modalAbertura').innerText = abertura;
+    document.getElementById('modalFechamento').innerText = fechamento;
+    document.getElementById('modalTotal').innerText = "Total Geral: " + total;
+
+    const blocosHtml = subVendas.map(sv => `
+        <p class="secao-titulo-comanda"><i class="fas fa-clipboard-list"></i> ${sv.comanda_nome}</p>
+        ${renderizarItensVenda(sv.observacoes)}
+        <p class="subtotal-comanda">Subtotal: R$ ${sv.valor_total.toFixed(2)}</p>
+    `).join('');
+
+    document.getElementById('modalCorpoItens').innerHTML = blocosHtml;
+
+    document.getElementById('modalDetalhes').style.display = "block";
+}
+
+// Renderiza os itens da venda a partir de `Venda.observacoes`, que pode vir em
+// dois formatos: o novo, estruturado com quantidade/valor por item
+// ("qtd::nome::unit::total|||qtd::nome::unit::total|||..."), ou o antigo,
+// vendas fechadas antes da migração, sem preço ("2x Cerveja, 1x Batata").
+// Qualquer formato fora do esperado cai no fallback do formato antigo,
+// sem lançar exceção.
+function renderizarItensVenda(observacoes) {
+    if (!observacoes) {
+        return "Nenhum item detalhado nesta venda.";
+    }
+
+    if (observacoes.includes('|||') || observacoes.includes('::')) {
+        try {
+            const linhas = observacoes.split('|||').map(l => l.trim()).filter(Boolean);
+            const itens = linhas.map(linha => {
+                const partes = linha.split('::');
+                if (partes.length !== 4) {
+                    throw new Error('Item em formato inesperado: ' + linha);
+                }
+                const [qtd, nome, valorUnit, valorTotal] = partes;
+                const unit = parseFloat(valorUnit);
+                const total = parseFloat(valorTotal);
+                if (isNaN(unit) || isNaN(total)) {
+                    throw new Error('Valores inválidos no item: ' + linha);
+                }
+                return { qtd: qtd.trim(), nome: nome.trim(), unit, total };
+            });
+
+            if (!itens.length) {
+                throw new Error('Nenhum item válido encontrado.');
+            }
+
+            const linhasHtml = itens.map(i => `
+                <tr>
+                    <td>${i.nome}</td>
+                    <td class="col-qtd">${i.qtd}</td>
+                    <td class="col-num">R$ ${i.unit.toFixed(2)}</td>
+                    <td class="col-num">R$ ${i.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <table class="tabela-itens">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="col-qtd">Qtd</th>
+                            <th class="col-num">Unit.</th>
+                            <th class="col-num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhasHtml}</tbody>
+                </table>
+            `;
+        } catch (erro) {
+            // Formato novo malformado — cai no fallback do formato antigo abaixo.
+        }
+    }
+
+    // Formato antigo (lista simples, sem preço por item).
+    const itensAntigos = observacoes.split(',').map(i => i.trim()).filter(Boolean);
+    if (!itensAntigos.length) {
+        return "Nenhum item detalhado nesta venda.";
+    }
+    return itensAntigos.map(i => '• ' + i).join('<br>');
 }
 
 function fecharModal() {
@@ -156,37 +330,65 @@ function imprimirComanda() {
     const itensHtml = document.getElementById('modalCorpoItens').innerHTML;
     const subtituloMesa = comandaNome ? `Mesa ${mesa} · ${comandaNome}` : `Mesa ${mesa}`;
 
-    const janela = window.open('', '_blank', 'width=420,height=600');
+    const agora = new Date();
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const dataImpressao = `${pad2(agora.getDate())}/${pad2(agora.getMonth() + 1)}/${agora.getFullYear()} ${pad2(agora.getHours())}:${pad2(agora.getMinutes())}`;
+
+    const janela = window.open('', '_blank', 'width=480,height=800');
     janela.document.write(`
         <!DOCTYPE html>
         <html lang="pt-br">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Comanda - ${subtituloMesa}</title>
             <style>
-                body { font-family: 'Segoe UI', sans-serif; padding: 24px 28px; color: #222; max-width: 380px; margin: 0 auto; }
+                @page { size: auto; margin: 0; }
+                body { font-family: 'Segoe UI', sans-serif; padding: 32px 28px; color: #222; max-width: 380px; margin: 0 auto; font-size: 0.9rem; }
                 .topo { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 12px; margin-bottom: 16px; }
-                .topo h2 { margin: 0 0 4px; color: #2c3e50; font-size: 1.2rem; }
+                .topo h2 { margin: 0 0 4px; color: #2c3e50; font-size: 1.15rem; letter-spacing: 0.5px; text-transform: uppercase; }
                 .topo p  { margin: 0; color: #7f8c8d; font-size: 0.85rem; }
-                .horarios { background: #f8f9fa; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: #555; margin-bottom: 14px; line-height: 1.8; }
+                .topo .impresso-em { margin: 4px 0 0; color: #aaa; font-size: 0.68rem; }
+                .topo .dados-empresa { margin: 0 0 6px; }
+                .topo .dados-empresa p { margin: 0; color: #7f8c8d; font-size: 0.72rem; line-height: 1.5; }
+                .info { display: flex; justify-content: space-between; gap: 12px; font-size: 0.82rem; color: #555; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #ccc; }
+                .info strong { display: block; color: #2c3e50; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+                .secao-titulo { margin: 0 0 8px; font-weight: 700; color: #2c3e50; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; }
+                .secao-titulo-comanda { margin: 16px 0 8px; font-weight: 700; color: #2c3e50; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; border-top: 1px dashed #ccc; padding-top: 10px; }
+                .secao-titulo-comanda:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+                .subtotal-comanda { text-align: right; font-style: italic; color: #7f8c8d; font-size: 0.78rem; margin: 4px 0 0; }
                 .itens { background: #f9f9f9; padding: 14px 16px; border-radius: 8px; line-height: 2; font-size: 0.95rem; }
-                .total { margin-top: 16px; font-size: 1.1rem; font-weight: 800; color: #27ae60; text-align: right; }
-                .rodape { margin-top: 20px; font-size: 0.78rem; color: #aaa; text-align: center; border-top: 1px dashed #ddd; padding-top: 12px; }
+                .tabela-itens { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+                .tabela-itens th, .tabela-itens td { padding: 6px 4px; border-bottom: 1px solid #ddd; text-align: left; }
+                .tabela-itens th { color: #7f8c8d; text-transform: uppercase; font-size: 0.7rem; font-weight: 700; }
+                .tabela-itens td { color: #2c3e50; }
+                .tabela-itens td.col-num, .tabela-itens th.col-num { text-align: right; }
+                .tabela-itens td.col-qtd, .tabela-itens th.col-qtd { text-align: center; }
+                .tabela-itens tbody tr:last-child td { border-bottom: none; }
+                .total { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 1.1rem; font-weight: 800; color: #2c3e50; text-align: right; }
+                .rodape { margin-top: 20px; font-size: 0.8rem; color: #7f8c8d; text-align: center; border-top: 1px dashed #ddd; padding-top: 12px; }
+                .aviso-fiscal { margin-top: 8px; font-size: 0.68rem; color: #aaa; text-align: center; }
             </style>
         </head>
         <body>
             <div class="topo">
                 <h2>Prosa &amp; Petiscaria</h2>
+                <div class="dados-empresa">
+                    <p>Rua Ananias de Almeida Bastos, 357</p>
+                    <p>CNPJ: 62.779.547/0001-94 &middot; Instagram: @ProsaePetiscaria</p>
+                </div>
                 <p>${subtituloMesa}</p>
+                <p class="impresso-em">Impresso em: ${dataImpressao}</p>
             </div>
-            <div class="horarios">
-                <div>🟢 <strong>Abertura:</strong> ${abertura}</div>
-                <div>✅ <strong>Fechamento:</strong> ${fechamento}</div>
+            <div class="info">
+                <div><strong>Abertura</strong>${abertura}</div>
+                <div><strong>Fechamento</strong>${fechamento}</div>
             </div>
-            <p style="margin:0 0 8px; font-weight:700;">Produtos consumidos:</p>
+            <p class="secao-titulo">Produtos consumidos</p>
             <div class="itens">${itensHtml}</div>
-            <div class="total">${total}</div>
-            <div class="rodape">Obrigado pela visita! 🍻</div>
+            <div class="total">Total: ${total}</div>
+            <div class="rodape">Obrigado pela visita!</div>
+            <div class="aviso-fiscal">Este documento não possui valor fiscal.</div>
         </body>
         </html>
     `);

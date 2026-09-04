@@ -637,10 +637,10 @@
 
 .filtro-data-inline {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     align-items: center;
     background: #fff;
-    padding: 8px;
+    padding: 6px 8px;
     border-radius: 10px;
     border: 1px solid #dee2e6;
 }
@@ -649,10 +649,10 @@
    única, com um separador textual entre os dois campos. */
 .filtro-periodo-inline {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
     background: #f8f9fa;
-    padding: 8px;
+    padding: 6px 8px;
     border-radius: 10px;
     border: 1px solid #dee2e6;
     flex-wrap: wrap;
@@ -660,7 +660,7 @@
 
 .filtro-periodo-separador {
     color: #95a5a6;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 .input-data-clean {
@@ -668,19 +668,29 @@
     outline: none;
     padding: 5px;
     color: #495057;
+    font-size: 0.9rem;
 }
 
 .input-data-br {
-    width: 100px;
+    width: 92px;
 }
 
 .btn-search-icon {
-    padding: 8px 18px; 
-    border-radius: 8px; 
-    border: none; 
-    font-weight: 600; 
+    padding: 7px 11px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
     cursor: pointer;
     width: auto;
+}
+
+/* Especificidade maior que .btn-success (admin.css define width: 100%
+   nela) para o botão de busca dentro destes filtros nunca esticar,
+   independente da ordem de carregamento das folhas de estilo. */
+.filtro-data-inline .btn-search-icon,
+.filtro-periodo-inline .btn-search-icon {
+    width: auto;
+    flex-shrink: 0;
 }
 
 .grid-historico-vendas {

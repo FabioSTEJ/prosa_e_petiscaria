@@ -12,6 +12,11 @@ class Venda(db.Model):
     fechada_por_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
     comanda_nome = db.Column(db.String(80), nullable=True)
+    # Snapshot do GrupoMesa.id vigente no momento em que a comanda foi fechada.
+    # Não é ForeignKey de propósito: GrupoMesa é excluído quando as mesas são
+    # desunidas (ver MesaService.desunir_mesa), mas o histórico de vendas deve
+    # permanecer agrupável mesmo depois que o grupo original deixar de existir.
+    grupo_mesa_id = db.Column(db.Integer, nullable=True)
 
     def tempo_permanencia(self):
         if self.data_fechamento and self.data_abertura:

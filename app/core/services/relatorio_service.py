@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, date
 from sqlalchemy import func
 from app.core.models import Usuario, Pedido, Mesa, Venda
@@ -90,4 +91,53 @@ class RelatorioService:
             "vendas": vendas,
             "faturamento_total": sum(v.valor_total for v in vendas),
             "data_selecionada": data_filtro,
+            "linhas": RelatorioService._agrupar_vendas_por_grupo_mesa(vendas),
         }
+
+    @staticmethod
+    def _agrupar_vendas_por_grupo_mesa(vendas: list) -> list:
+        """Agrupa vendas de mesas unidas (grupo) em uma única linha para o histórico."""
+        vendas_por_grupo = defaultdict(list)
+        for v in vendas:
+            if v.grupo_mesa_id:
+                vendas_por_grupo[v.grupo_mesa_id].append(v)
+
+        # só tratamos como "grupo" quando 2+ vendas do mesmo grupo caíram no
+        # filtro do dia; uma única venda com grupo_mesa_id não-nulo mas sem
+        # "irmãs" no período é só uma venda avulsa comum pra fins de exibição.
+        grupos_multiplos = {gid: vs for gid, vs in vendas_por_grupo.items() if len(vs) > 1}
+        ids_em_grupo = {v.id for vs in grupos_multiplos.values() for v in vs}
+
+        linhas = []
+        for v in vendas:
+            if v.id in ids_em_grupo:
+                continue
+            linhas.append({'tipo': 'individual', 'venda': v})
+
+        for sub_vendas in grupos_multiplos.values():
+            mesas_label = '+'.join(sorted({sv.mesa_numero for sv in sub_vendas}))
+            atendentes = {sv.aberta_por_nome for sv in sub_vendas if sv.aberta_por_nome}
+            atendente_label = next(iter(atendentes)) if len(atendentes) == 1 else 'Vários'
+            linhas.append({
+                'tipo': 'grupo',
+                'mesas_label': mesas_label,
+                'atendente_label': atendente_label,
+                'total': sum(sv.valor_total for sv in sub_vendas),
+                'data_abertura': min(sv.data_abertura for sv in sub_vendas),
+                'data_fechamento': max(sv.data_fechamento for sv in sub_vendas),
+                'sub_vendas': [
+                    {
+                        'comanda_nome': sv.comanda_nome or f'Mesa {sv.mesa_numero}',
+                        'mesa_numero': sv.mesa_numero,
+                        'observacoes': sv.observacoes,
+                        'valor_total': sv.valor_total,
+                    }
+                    for sv in sub_vendas
+                ],
+            })
+
+        linhas.sort(
+            key=lambda l: l['venda'].data_fechamento if l['tipo'] == 'individual' else l['data_fechamento'],
+            reverse=True,
+        )
+        return linhas
