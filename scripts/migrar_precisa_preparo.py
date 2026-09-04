@@ -34,7 +34,7 @@ def main():
         print("Banco não encontrado. Nada a migrar.")
         sys.exit(0)
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     cur = conn.cursor()
 
     cur.execute("PRAGMA table_info(produto)")

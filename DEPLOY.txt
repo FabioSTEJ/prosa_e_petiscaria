@@ -121,6 +121,7 @@ RECRIAR O ADMIN MANUALMENTE (caso tenha sido deletado):
 ATUALIZAR O SITE (nova versao do codigo):
   git pull origin main
   docker compose build
+  docker compose stop web
   docker compose run --rm web python scripts/migrar_tudo.py
   docker compose up -d
 
@@ -130,6 +131,14 @@ ATUALIZAR O SITE (nova versao do codigo):
   ganhar as colunas novas SEM perder nenhum dado. Reiniciar direto com
   "docker compose up --build -d" (sem migrar antes) pode derrubar o site
   com erro de "coluna nao existe".
+
+  IMPORTANTE TAMBEM: o "docker compose stop web" antes da migracao para
+  o container antigo (que ainda pode ter o banco SQLite aberto) antes de
+  alterar o schema. Sem isso, se o site antigo estiver no meio de uma
+  transacao de escrita exatamente na hora da migracao, o ALTER TABLE pode
+  falhar com "database is locked". O site fica fora do ar por alguns
+  segundos entre o "stop" e o "up -d" — normal e esperado, a migracao em
+  si e rapida.
 
   O migrar_tudo.py roda TODOS os scripts scripts/migrar_*.py em sequencia.
   Cada um deles verifica sozinho se ja foi aplicado e pula se sim — por
