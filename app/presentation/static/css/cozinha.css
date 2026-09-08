@@ -83,15 +83,15 @@ body.kds-modo-painel .kds-dot {
     height: 12px;
 }
 
-/* O cabeçalho compacto (.kds-header-page/.kds-legenda*/.kds-dot) e as
+/* O cabeçalho compacto (.kds-header-page / .kds-legenda / .kds-dot) e as
    bolinhas de status agora moram em componentes.css — passaram a ser
    reaproveitados também por painel.html (mapa de mesas do garçom), que
    tem exatamente o mesmo problema de espaço em tela pequena. */
 
 .grid-mesas-kds {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
     margin-top: 20px;
 }
 
@@ -106,12 +106,12 @@ body.kds-modo-painel .kds-dot {
 /* Card Principal */
 .card-pedido-kds {
     background: white;
-    padding: 15px;
+    padding: 10px;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    min-height: 220px;
+    min-height: 150px;
     transition: transform 0.2s;
 }
 
@@ -128,7 +128,7 @@ body.kds-modo-painel .kds-dot {
 .kds-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 9px;
 }
 
 /* Linha "MESA" + rótulo de status: fica na mesma linha do texto pequeno
@@ -176,7 +176,7 @@ body.kds-modo-painel .kds-dot {
 }
 
 .kds-mesa-numero {
-    font-size: 2rem;
+    font-size: 1.45rem;
     font-weight: 900;
     color: #2c3e50;
     display: block;
@@ -208,18 +208,18 @@ body.kds-modo-painel .kds-dot {
 /* Área do Item */
 .kds-item-box {
     background: #f8f9fa;
-    padding: 12px;
+    padding: 9px;
     border-radius: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 9px;
     border: 1px solid #eee;
     flex-grow: 1;
 }
 
 .kds-item-nome {
-    font-size: 1.3rem;
+    font-size: 1.05rem;
     font-weight: 800;
     color: #2c3e50;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .kds-observacao {
@@ -242,7 +242,7 @@ body.kds-modo-painel .kds-dot {
 
 .btn-kds {
     flex: 1;
-    padding: 12px;
+    padding: 9px;
     border-radius: 10px;
     color: white;
     text-decoration: none;
@@ -309,25 +309,25 @@ body.kds-modo-painel .kds-dot {
 @media (max-width: 767px) {
     .grid-mesas-kds { margin-top: 12px; }
 
-    .card-pedido-kds { padding: 12px; min-height: 0; }
-    .kds-header { margin-bottom: 10px; }
-    .kds-mesa-numero { font-size: 1.7rem; }
-    .kds-item-box { padding: 10px; margin-bottom: 10px; }
-    .kds-item-nome { font-size: 1.15rem; margin-bottom: 4px; }
-    .btn-kds { padding: 10px; }
+    .card-pedido-kds { padding: 9px; min-height: 0; }
+    .kds-header { margin-bottom: 7px; }
+    .kds-mesa-numero { font-size: 1.3rem; }
+    .kds-item-box { padding: 8px; margin-bottom: 8px; }
+    .kds-item-nome { font-size: 0.95rem; margin-bottom: 4px; }
+    .btn-kds { padding: 8px; }
 }
 
 /* Celular: cards no mínimo indispensável pra sobrar espaço pros pedidos. */
 @media (max-width: 480px) {
     .grid-mesas-kds { margin-top: 10px; gap: 10px; }
 
-    .card-pedido-kds { padding: 10px; border-radius: 12px; }
-    .kds-mesa-numero { font-size: 1.5rem; }
+    .card-pedido-kds { padding: 8px; border-radius: 12px; }
+    .kds-mesa-numero { font-size: 1.15rem; }
     .kds-status-pill { font-size: 0.56rem; padding: 1px 6px; }
     .kds-timer { font-size: 0.72rem; }
-    .kds-timer strong { font-size: 1rem; }
-    .kds-item-nome { font-size: 1.05rem; }
+    .kds-timer strong { font-size: 0.9rem; }
+    .kds-item-nome { font-size: 0.88rem; }
     .kds-observacao { font-size: 0.78rem; padding: 5px 8px; }
-    .btn-kds { padding: 9px; font-size: 0.75rem; }
-    .btn-cancelar-kds { width: 40px; }
+    .btn-kds { padding: 7px; font-size: 0.75rem; }
+    .btn-cancelar-kds { width: 38px; }
 }

@@ -3,6 +3,7 @@ from app.api.garcom.controller import (
     home_garcom, painel_garcom, detalhe_mesa,
     tela_unir_mesas, unir_mesas, desunir_mesa,
     abrir_comanda, detalhe_comanda, lancar_item, excluir_item, finalizar_comanda,
+    finalizar_grupo_mesa, mover_comanda,
     pedidos_prontos_view, entregar_pedido,
 )
 
@@ -19,5 +20,7 @@ garcom_bp.add_url_rule('/comanda/<int:comanda_id>', view_func=detalhe_comanda)
 garcom_bp.add_url_rule('/comanda/<int:comanda_id>/lancar', view_func=lancar_item, methods=['POST'])
 garcom_bp.add_url_rule('/comanda/<int:comanda_id>/excluir/<int:pedido_id>', view_func=excluir_item)
 garcom_bp.add_url_rule('/comanda/<int:comanda_id>/finalizar', view_func=finalizar_comanda)
+garcom_bp.add_url_rule('/comanda/<int:comanda_id>/mover', view_func=mover_comanda, methods=['POST'])
+garcom_bp.add_url_rule('/mesa/<int:mesa_id>/finalizar-grupo', view_func=finalizar_grupo_mesa, methods=['POST'])
 garcom_bp.add_url_rule('/pedidos-prontos', view_func=pedidos_prontos_view)
 garcom_bp.add_url_rule('/entregar/<int:pedido_id>', view_func=entregar_pedido)

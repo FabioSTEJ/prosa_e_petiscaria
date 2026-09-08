@@ -126,8 +126,10 @@ def detalhe_mesa(mesa_id):
         quantidade_comandas = Comanda.query.filter_by(mesa_id=mesa.id).count()
         sugestao_nome = f"Comanda {quantidade_comandas + 1}"
         return render_template("garcom/abrir_comanda.html", mesa=mesa, sugestao_nome=sugestao_nome)
+    mesas_ativas = Mesa.query.filter_by(ativa=True).order_by(Mesa.numero).all()
     return render_template("garcom/comandas_mesa.html",
-                           mesa=mesa, mesas_grupo=mesas_grupo, comandas=comandas)
+                           mesa=mesa, mesas_grupo=mesas_grupo, comandas=comandas,
+                           mesas_ativas=mesas_ativas)
 
 
 @login_requerido(cargo_necessario='garcom')
@@ -177,8 +179,23 @@ def excluir_item(comanda_id, pedido_id):
     return redirect(url_for('garcom.detalhe_comanda', comanda_id=comanda_id))
 
 
+@login_requerido(cargo_necessario='garcom')
+def mover_comanda(comanda_id):
+    nova_mesa_id = request.form.get('nova_mesa_id', type=int)
+    voltar_mesa_id = request.form.get('voltar_mesa_id', type=int)
+    try:
+        comanda = ComandaService.mover(comanda_id, nova_mesa_id)
+        flash(f"{comanda.nome} movida para a Mesa {comanda.mesa_rel.numero}.")
+    except ValueError as e:
+        flash(str(e), "danger")
+    if voltar_mesa_id:
+        return redirect(url_for('garcom.detalhe_mesa', mesa_id=voltar_mesa_id))
+    return redirect(url_for('garcom.painel_garcom'))
+
+
 @login_requerido(cargo_necessario='admin')
 def finalizar_comanda(comanda_id):
+    mesa_id = request.args.get('mesa_id', type=int)
     try:
         resultado = ComandaService.finalizar(comanda_id, session.get('usuario_id'))
         if resultado['total'] > 0:
@@ -188,10 +205,28 @@ def finalizar_comanda(comanda_id):
             )
         else:
             flash(f"{resultado['comanda_nome']} (Mesa {resultado['mesa_numero']}) estava vazia.")
+        if mesa_id:
+            return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa_id))
         return redirect(url_for('garcom.painel_garcom'))
     except ValueError as e:
         flash(str(e), "danger")
+        if mesa_id:
+            return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa_id))
         return redirect(url_for('garcom.detalhe_comanda', comanda_id=comanda_id))
+
+
+@login_requerido(cargo_necessario='admin')
+def finalizar_grupo_mesa(mesa_id):
+    try:
+        resultado = ComandaService.finalizar_grupo(mesa_id, session.get('usuario_id'))
+        mesas_texto = ', '.join(resultado['mesas_numeros'])
+        flash(
+            f"{resultado['quantidade_comandas']} comanda(s) da Mesa {mesas_texto} fechada(s)! "
+            f"Total: R$ {resultado['total_geral']:.2f}"
+        )
+    except ValueError as e:
+        flash(str(e), "danger")
+    return redirect(url_for('garcom.detalhe_mesa', mesa_id=mesa_id))
 
 
 @login_requerido(cargo_necessario='garcom')

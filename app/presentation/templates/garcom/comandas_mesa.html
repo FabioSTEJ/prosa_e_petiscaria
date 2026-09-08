@@ -29,23 +29,72 @@
 
         <div class="lista-comandas-mesa">
             {% for comanda in comandas %}
-            <a href="{{ url_for('garcom.detalhe_comanda', comanda_id=comanda.id) }}" class="card-comanda-mesa">
-                <div class="comanda-mesa-info">
-                    <strong class="comanda-mesa-nome"><i class="fas fa-clipboard-list"></i> {{ comanda.nome }}</strong>
-                    <div class="comanda-mesa-meta">
-                        <i class="fas fa-user"></i> {{ comanda.aberta_por.nome_exibicao if comanda.aberta_por else '–' }}
-                        &nbsp;·&nbsp;
-                        <i class="fas fa-clock"></i> {{ comanda.data_abertura.strftime('%H:%M') }}
-                        {% if mesas_grupo|length > 1 %}
-                        &nbsp;·&nbsp; <i class="fas fa-door-open"></i> Mesa {{ comanda.mesa_rel.numero }}
-                        {% endif %}
+            <div class="card-comanda-mesa">
+                <a href="{{ url_for('garcom.detalhe_comanda', comanda_id=comanda.id) }}" class="comanda-mesa-link">
+                    <div class="comanda-mesa-info">
+                        <strong class="comanda-mesa-nome"><i class="fas fa-clipboard-list"></i> {{ comanda.nome }}</strong>
+                        <div class="comanda-mesa-meta">
+                            <i class="fas fa-user"></i> {{ comanda.aberta_por.nome_exibicao if comanda.aberta_por else '–' }}
+                            &nbsp;·&nbsp;
+                            <i class="fas fa-clock"></i> {{ comanda.data_abertura.strftime('%H:%M') }}
+                            {% if mesas_grupo|length > 1 %}
+                            &nbsp;·&nbsp; <i class="fas fa-door-open"></i> Mesa {{ comanda.mesa_rel.numero }}
+                            {% endif %}
+                        </div>
                     </div>
+                    <strong class="comanda-mesa-total">R$ {{ "%.2f"|format(comanda.calcular_total()) }}</strong>
+                </a>
+                <div class="comanda-mesa-acoes">
+                    <form action="{{ url_for('garcom.mover_comanda', comanda_id=comanda.id) }}"
+                          method="POST"
+                          class="form-mover-comanda"
+                          onsubmit="return confirm('Mover {{ comanda.nome }} para a mesa selecionada?')">
+                        <input type="hidden" name="voltar_mesa_id" value="{{ mesa.id }}">
+                        <select name="nova_mesa_id" class="select-mover-comanda" required aria-label="Mesa de destino para {{ comanda.nome }}">
+                            <option value="" disabled selected>Mover para...</option>
+                            {% for m in mesas_ativas %}
+                            {% if m.id != comanda.mesa_id %}
+                            <option value="{{ m.id }}">Mesa {{ m.numero }} ({{ m.status }})</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        <button type="submit"
+                                class="btn-mover-comanda"
+                                title="Mover {{ comanda.nome }}"
+                                aria-label="Mover {{ comanda.nome }}">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </form>
+                    {% if session['cargo'] == 'admin' %}
+                    <a href="{{ url_for('garcom.finalizar_comanda', comanda_id=comanda.id, mesa_id=mesa.id) }}"
+                       class="btn-fechar-comanda-mesa"
+                       title="Fechar conta de {{ comanda.nome }}"
+                       aria-label="Fechar conta de {{ comanda.nome }}"
+                       onclick="return confirm('Deseja finalizar a conta de {{ comanda.nome }} e liberar essa comanda?')">
+                        <i class="fas fa-check-circle"></i>
+                    </a>
+                    {% endif %}
                 </div>
-                <strong class="comanda-mesa-total">R$ {{ "%.2f"|format(comanda.calcular_total()) }}</strong>
-            </a>
+            </div>
             {% endfor %}
         </div>
     </div>
+
+    {% if session['cargo'] == 'admin' %}
+        {% if comandas|length > 1 or mesas_grupo|length > 1 %}
+        {% set mesas_texto = mesas_grupo|map(attribute='numero')|join(' + ') if mesas_grupo|length > 1 else mesa.numero %}
+        <div class="card-finalizar-grupo">
+            <form method="POST" action="{{ url_for('garcom.finalizar_grupo_mesa', mesa_id=mesa.id) }}"
+                  onsubmit="return confirm('Isso vai fechar TODAS as {{ comandas|length }} comandas abertas da Mesa {{ mesas_texto }} de uma só vez, somando os valores de cada uma. Essa ação é IRREVERSÍVEL e não pode ser desfeita. Confirma o fechamento de TODAS as contas?')">
+                <button type="submit" class="btn-finalizar-grupo">
+                    <i class="fas fa-check-double"></i> Fechar TODAS as Comandas ({{ comandas|length }})
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    {% else %}
+        <p class="nota-somente-admin"><i class="fas fa-lock"></i> Somente administradores podem encerrar contas no sistema.</p>
+    {% endif %}
 
     <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 25px;">
         <div style="background: #34495e; color: white; padding: 10px 16px;">

@@ -26,15 +26,3 @@ tests/__pycache__/
 # Permissoes/configuracoes locais de sessao do Claude Code (nao e politica do time)
 .claude/settings.json
 .claude/settings.local.json
-
-# Ferramentas de desenvolvimento (nao fazem parte do site em producao)
-.claude/agents/
-.github/
-tests/
-requirements-dev.txt
-pytest.ini
-scripts/run_tests.ps1
-scripts/seed_demo.py
-
-# Backup local da versao anterior a reestruturacao (so' nesta maquina)
-_backup_versao_antiga/

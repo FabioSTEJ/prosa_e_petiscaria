@@ -343,31 +343,57 @@ function imprimirComanda() {
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Comanda - ${subtituloMesa}</title>
             <style>
-                @page { size: auto; margin: 0; }
-                body { font-family: 'Segoe UI', sans-serif; padding: 32px 28px; color: #222; max-width: 380px; margin: 0 auto; font-size: 0.9rem; }
-                .topo { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 12px; margin-bottom: 16px; }
-                .topo h2 { margin: 0 0 4px; color: #2c3e50; font-size: 1.15rem; letter-spacing: 0.5px; text-transform: uppercase; }
-                .topo p  { margin: 0; color: #7f8c8d; font-size: 0.85rem; }
-                .topo .impresso-em { margin: 4px 0 0; color: #aaa; font-size: 0.68rem; }
-                .topo .dados-empresa { margin: 0 0 6px; }
-                .topo .dados-empresa p { margin: 0; color: #7f8c8d; font-size: 0.72rem; line-height: 1.5; }
-                .info { display: flex; justify-content: space-between; gap: 12px; font-size: 0.82rem; color: #555; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #ccc; }
-                .info strong { display: block; color: #2c3e50; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
-                .secao-titulo { margin: 0 0 8px; font-weight: 700; color: #2c3e50; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; }
-                .secao-titulo-comanda { margin: 16px 0 8px; font-weight: 700; color: #2c3e50; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.4px; border-top: 1px dashed #ccc; padding-top: 10px; }
+                /* Recibo pensado pra bobina térmica de 58mm (~48mm de área útil
+                   de impressão). Tudo em px/mm em vez de rem — não faz sentido
+                   herdar de um root de 16px numa impressão desse tamanho.
+                   Fonte monoespaçada e visual simples, tipo cupom fiscal de
+                   supermercado: sem uppercase decorativo, sem letter-spacing,
+                   itens numa linha só (qtd + nome à esquerda, total à direita). */
+                @page { size: 58mm auto; margin: 0; }
+                * { box-sizing: border-box; font-family: inherit; }
+                body {
+                    font-family: 'Courier New', Courier, monospace;
+                    width: 48mm;
+                    margin: 0 auto;
+                    padding: 2mm 3mm;
+                    color: #000;
+                    font-size: 7px;
+                    line-height: 1.35;
+                }
+                .topo { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2mm; margin-bottom: 2mm; }
+                .topo h2 { margin: 0 0 1mm; color: #000; font-size: 10px; }
+                .topo p  { margin: 0; color: #333; font-size: 7px; }
+                .topo .impresso-em { margin: 1mm 0 0; color: #666; font-size: 6px; }
+                .topo .dados-empresa { margin: 0 0 1.5mm; }
+                .topo .dados-empresa p { margin: 0; color: #444; font-size: 6px; line-height: 1.3; }
+                .info { display: flex; justify-content: space-between; gap: 2mm; font-size: 7px; color: #333; margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 1px dashed #999; }
+                .info strong { display: block; color: #000; font-size: 6px; margin-bottom: 0.5mm; }
+                .secao-titulo { margin: 0 0 1.5mm; font-weight: 700; color: #000; font-size: 7px; }
+                .secao-titulo-comanda { margin: 2mm 0 1.5mm; font-weight: 700; color: #000; font-size: 7px; border-top: 1px dashed #999; padding-top: 1.5mm; }
                 .secao-titulo-comanda:first-child { margin-top: 0; border-top: none; padding-top: 0; }
-                .subtotal-comanda { text-align: right; font-style: italic; color: #7f8c8d; font-size: 0.78rem; margin: 4px 0 0; }
-                .itens { background: #f9f9f9; padding: 14px 16px; border-radius: 8px; line-height: 2; font-size: 0.95rem; }
-                .tabela-itens { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-                .tabela-itens th, .tabela-itens td { padding: 6px 4px; border-bottom: 1px solid #ddd; text-align: left; }
-                .tabela-itens th { color: #7f8c8d; text-transform: uppercase; font-size: 0.7rem; font-weight: 700; }
-                .tabela-itens td { color: #2c3e50; }
-                .tabela-itens td.col-num, .tabela-itens th.col-num { text-align: right; }
-                .tabela-itens td.col-qtd, .tabela-itens th.col-qtd { text-align: center; }
-                .tabela-itens tbody tr:last-child td { border-bottom: none; }
-                .total { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 1.1rem; font-weight: 800; color: #2c3e50; text-align: right; }
-                .rodape { margin-top: 20px; font-size: 0.8rem; color: #7f8c8d; text-align: center; border-top: 1px dashed #ddd; padding-top: 12px; }
-                .aviso-fiscal { margin-top: 8px; font-size: 0.68rem; color: #aaa; text-align: center; }
+                .subtotal-comanda { text-align: right; font-style: italic; color: #333; font-size: 6px; margin: 1mm 0 0; }
+                .itens { background: none; padding: 0; border-radius: 0; line-height: 1.5; font-size: 7px; }
+
+                /* A tabela de itens (Item/Qtd/Unit./Total) reaproveita o mesmo
+                   HTML gerado por renderizarItensVenda() usado no preview em
+                   tela, mas aqui vira 1 linha por item: qtd + nome à esquerda
+                   (usando a propriedade order do flex pra colocar a célula de
+                   quantidade antes da de nome, sem precisar mexer no HTML
+                   gerado), coluna de valor unitário oculta, e o total do item
+                   fixo à direita. */
+                .tabela-itens, .tabela-itens tbody { display: block; width: 100%; }
+                .tabela-itens thead { display: none; }
+                .tabela-itens tr { display: flex; align-items: baseline; gap: 4px; padding: 1mm 0; }
+                .tabela-itens td { display: block; padding: 0; border: none; font-size: 7px; color: #000; }
+                .tabela-itens td:nth-child(2) { order: -1; flex-shrink: 0; color: #000; }
+                .tabela-itens td:nth-child(2)::after { content: "x"; }
+                .tabela-itens td:nth-child(1) { order: 0; flex: 1 1 auto; min-width: 0; word-break: break-word; text-align: left; }
+                .tabela-itens td:nth-child(3) { display: none; }
+                .tabela-itens td:nth-child(4) { order: 1; margin-left: auto; flex-shrink: 0; white-space: nowrap; text-align: right; }
+
+                .total { margin-top: 2mm; padding-top: 1.5mm; border-top: 1px dashed #000; font-size: 9px; font-weight: 800; color: #000; text-align: right; }
+                .rodape { margin-top: 2.5mm; font-size: 7px; color: #333; text-align: center; border-top: 1px dashed #ccc; padding-top: 1.5mm; }
+                .aviso-fiscal { margin-top: 1mm; font-size: 6px; color: #777; text-align: center; }
             </style>
         </head>
         <body>

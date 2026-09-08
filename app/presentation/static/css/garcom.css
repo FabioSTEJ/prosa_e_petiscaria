@@ -95,22 +95,165 @@
     flex-direction: column;
 }
 
+/* O card inteiro deixou de ser um único <a> pra poder abrigar, ao lado da
+   área clicável que leva ao detalhe da comanda, um botão de "Fechar Conta"
+   individual (só visível pro admin) — HTML não permite <a>/<form> aninhado
+   dentro de outro <a>. Virou um <div> container; a parte clicável agora é
+   .comanda-mesa-link (mesmo espaçamento/comportamento de antes), e o botão
+   de fechar fica como irmão dela, dentro do mesmo container. */
 .card-comanda-mesa {
+    display: flex;
+    flex-direction: column;
+    border-left: 3px solid #3498db;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-comanda-mesa:last-child { border-bottom: none; }
+
+.comanda-mesa-link {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    border-left: 3px solid #3498db;
-    border-bottom: 1px solid #f0f0f0;
     text-decoration: none !important;
     color: inherit;
     transition: background 0.15s;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
-.card-comanda-mesa:last-child { border-bottom: none; }
-.card-comanda-mesa:hover { background: #fafafa; }
-.card-comanda-mesa:active { background: #f2f2f2; }
+.comanda-mesa-link:hover { background: #fafafa; }
+.comanda-mesa-link:active { background: #f2f2f2; }
+
+/* Botão de fechar conta individual, direto na lista — mesma cor verde do
+   "Fechar Conta" de detalhe_comanda.html, mas compacto (só ícone) pra caber
+   ao lado da linha sem competir com o nome/total da comanda. Alvo de toque
+   de 44px (mínimo recomendado), maior que o de excluir_item (36px) porque
+   aqui é a ação principal disponível na lista, não uma ação secundária. */
+.btn-fechar-comanda-mesa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 8px;
+    background: #27ae60;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.btn-fechar-comanda-mesa:hover { filter: brightness(1.08); }
+.btn-fechar-comanda-mesa:active { transform: scale(0.94); }
+
+/* --- LINHA DE AÇÕES DA COMANDA (mover + fechar) ---
+   Fica numa linha própria abaixo do link principal (nome/meta/total) em
+   vez de espremida ao lado dele — com o link clicável já ocupando boa
+   parte da largura em telas estreitas, tentar caber select + 2 botões na
+   mesma linha horizontal ficava apertado demais pro toque do garçom.
+   Sempre visível pra qualquer garçom (mover mesa não é ação exclusiva de
+   admin); o botão de fechar conta continua condicionado ao cargo admin no
+   template e só aparece dentro dessa mesma linha quando existir. */
+.comanda-mesa-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px 12px 14px;
+}
+
+.form-mover-comanda {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Select de destino ocupa o espaço disponível na linha de ações; altura
+   alinhada aos 44px de alvo de toque usados nos botões da mesma linha. */
+.select-mover-comanda {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid #dcdfe3;
+    border-radius: 8px;
+    background: #fff;
+    color: #2c3e50;
+    font-size: 0.82rem;
+    box-sizing: border-box;
+}
+
+/* Botão de mover — cor neutra (azul), mesmo tamanho/estilo de toque do
+   botão de fechar conta ao lado, mas com identidade visual própria pra não
+   ser confundido com a ação de encerrar a comanda. */
+.btn-mover-comanda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border: none;
+    border-radius: 8px;
+    background: #3498db;
+    color: #fff;
+    font-size: 1.05rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.btn-mover-comanda:hover { filter: brightness(1.08); }
+.btn-mover-comanda:active { transform: scale(0.94); }
+
+/* Botão de fechar TODAS as comandas do grupo de uma vez — só aparece quando
+   há mais de uma comanda aberta (avulsa ou por mesas unidas). Cor
+   propositalmente diferente do verde do fechamento individual (vermelho
+   escuro, não o mesmo tom de "unir mesas" nem do alerta pendente) pra não
+   parecer uma ação corriqueira: fecha tudo de uma vez e é irreversível. */
+.card-finalizar-grupo {
+    margin-bottom: 25px;
+}
+
+.card-finalizar-grupo form {
+    margin: 0;
+}
+
+.btn-finalizar-grupo {
+    width: 100%;
+    padding: 14px 20px;
+    background: #922b21;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(146, 43, 33, 0.3);
+    transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+}
+
+.btn-finalizar-grupo:hover { filter: brightness(1.1); box-shadow: 0 6px 15px rgba(146, 43, 33, 0.4); }
+.btn-finalizar-grupo:active { transform: scale(0.98); filter: brightness(0.95); }
+
+.nota-somente-admin {
+    max-width: 320px;
+    margin: 0 auto 25px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #7f8c8d;
+    font-style: italic;
+}
 
 .comanda-mesa-info { min-width: 0; }
 
