@@ -15,6 +15,7 @@ COPY app/ ./app/
 COPY scripts/ ./scripts/
 COPY run.py .
 COPY entrypoint.sh .
+COPY VERSION .
 
 RUN chmod +x entrypoint.sh && mkdir -p /app/data
 
