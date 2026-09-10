@@ -334,8 +334,7 @@ function imprimirComanda() {
     const pad2 = (n) => String(n).padStart(2, '0');
     const dataImpressao = `${pad2(agora.getDate())}/${pad2(agora.getMonth() + 1)}/${agora.getFullYear()} ${pad2(agora.getHours())}:${pad2(agora.getMinutes())}`;
 
-    const janela = window.open('', '_blank', 'width=480,height=800');
-    janela.document.write(`
+    const reciboHtml = `
         <!DOCTYPE html>
         <html lang="pt-br">
         <head>
@@ -343,57 +342,58 @@ function imprimirComanda() {
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Comanda - ${subtituloMesa}</title>
             <style>
-                /* Recibo pensado pra bobina térmica de 58mm (~48mm de área útil
+                /* Recibo pensado pra bobina térmica de 80mm (~75mm de área útil
                    de impressão). Tudo em px/mm em vez de rem — não faz sentido
                    herdar de um root de 16px numa impressão desse tamanho.
-                   Fonte monoespaçada e visual simples, tipo cupom fiscal de
-                   supermercado: sem uppercase decorativo, sem letter-spacing,
-                   itens numa linha só (qtd + nome à esquerda, total à direita). */
-                @page { size: 58mm auto; margin: 0; }
+                   Fonte monoespaçada em peso encorpado (negrito), tipo cupom
+                   fiscal de supermercado: sem uppercase decorativo, sem
+                   letter-spacing, itens numa tabela de verdade com as 4
+                   colunas (Item, Qtd, Unit., Total) visíveis. Fonte em peso
+                   normal/fina sai fraca em impressora térmica mesmo com tinta
+                   boa — por isso o body usa font-weight 700. */
+                @page { size: 80mm auto; margin: 0; }
                 * { box-sizing: border-box; font-family: inherit; }
                 body {
                     font-family: 'Courier New', Courier, monospace;
-                    width: 48mm;
-                    margin: 0 auto;
-                    padding: 2mm 3mm;
+                    font-weight: 700;
+                    width: 80mm;
+                    margin: 0;
+                    padding: 2mm 2.5mm;
                     color: #000;
-                    font-size: 7px;
+                    font-size: 10px;
                     line-height: 1.35;
                 }
                 .topo { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2mm; margin-bottom: 2mm; }
-                .topo h2 { margin: 0 0 1mm; color: #000; font-size: 10px; }
-                .topo p  { margin: 0; color: #333; font-size: 7px; }
-                .topo .impresso-em { margin: 1mm 0 0; color: #666; font-size: 6px; }
+                .topo h2 { margin: 0 0 1mm; color: #000; font-size: 14px; }
+                .topo p  { margin: 0; color: #333; font-size: 10px; }
+                .topo .impresso-em { margin: 1mm 0 0; color: #666; font-size: 8px; }
                 .topo .dados-empresa { margin: 0 0 1.5mm; }
-                .topo .dados-empresa p { margin: 0; color: #444; font-size: 6px; line-height: 1.3; }
-                .info { display: flex; justify-content: space-between; gap: 2mm; font-size: 7px; color: #333; margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 1px dashed #999; }
-                .info strong { display: block; color: #000; font-size: 6px; margin-bottom: 0.5mm; }
-                .secao-titulo { margin: 0 0 1.5mm; font-weight: 700; color: #000; font-size: 7px; }
-                .secao-titulo-comanda { margin: 2mm 0 1.5mm; font-weight: 700; color: #000; font-size: 7px; border-top: 1px dashed #999; padding-top: 1.5mm; }
+                .topo .dados-empresa p { margin: 0; color: #444; font-size: 8px; line-height: 1.3; }
+                .info { display: flex; justify-content: space-between; gap: 2mm; font-size: 10px; color: #333; margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 1px dashed #999; }
+                .info strong { display: block; color: #000; font-size: 9px; margin-bottom: 0.5mm; }
+                .secao-titulo { margin: 0 0 1.5mm; font-weight: 700; color: #000; font-size: 10px; }
+                .secao-titulo-comanda { margin: 2mm 0 1.5mm; font-weight: 700; color: #000; font-size: 10px; border-top: 1px dashed #999; padding-top: 1.5mm; }
                 .secao-titulo-comanda:first-child { margin-top: 0; border-top: none; padding-top: 0; }
-                .subtotal-comanda { text-align: right; font-style: italic; color: #333; font-size: 6px; margin: 1mm 0 0; }
-                .itens { background: none; padding: 0; border-radius: 0; line-height: 1.5; font-size: 7px; }
+                .subtotal-comanda { text-align: right; font-style: italic; color: #333; font-size: 9px; margin: 1mm 0 0; }
+                .itens { background: none; padding: 0; border-radius: 0; line-height: 1.5; font-size: 10px; }
 
                 /* A tabela de itens (Item/Qtd/Unit./Total) reaproveita o mesmo
                    HTML gerado por renderizarItensVenda() usado no preview em
-                   tela, mas aqui vira 1 linha por item: qtd + nome à esquerda
-                   (usando a propriedade order do flex pra colocar a célula de
-                   quantidade antes da de nome, sem precisar mexer no HTML
-                   gerado), coluna de valor unitário oculta, e o total do item
-                   fixo à direita. */
-                .tabela-itens, .tabela-itens tbody { display: block; width: 100%; }
-                .tabela-itens thead { display: none; }
-                .tabela-itens tr { display: flex; align-items: baseline; gap: 4px; padding: 1mm 0; }
-                .tabela-itens td { display: block; padding: 0; border: none; font-size: 7px; color: #000; }
-                .tabela-itens td:nth-child(2) { order: -1; flex-shrink: 0; color: #000; }
-                .tabela-itens td:nth-child(2)::after { content: "x"; }
-                .tabela-itens td:nth-child(1) { order: 0; flex: 1 1 auto; min-width: 0; word-break: break-word; text-align: left; }
-                .tabela-itens td:nth-child(3) { display: none; }
-                .tabela-itens td:nth-child(4) { order: 1; margin-left: auto; flex-shrink: 0; white-space: nowrap; text-align: right; }
+                   tela — aqui vira uma tabela de verdade, com as 4 colunas
+                   visíveis (a coluna de unitário deixou de ser escondida).
+                   A coluna de item tem largura fixa proporcional e quebra
+                   linha em nomes longos, pra não estourar os 75mm de papel. */
+                .tabela-itens { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                .tabela-itens th, .tabela-itens td { padding: 0.8mm 0.5mm; font-size: 10px; color: #000; vertical-align: top; }
+                .tabela-itens thead th { border-bottom: 1px solid #000; font-size: 9px; text-align: left; }
+                .tabela-itens td:nth-child(1), .tabela-itens th:nth-child(1) { width: 42%; text-align: left; word-break: break-word; }
+                .tabela-itens td:nth-child(2), .tabela-itens th:nth-child(2) { width: 12%; text-align: center; }
+                .tabela-itens td:nth-child(3), .tabela-itens th:nth-child(3) { width: 23%; text-align: right; white-space: nowrap; }
+                .tabela-itens td:nth-child(4), .tabela-itens th:nth-child(4) { width: 23%; text-align: right; white-space: nowrap; }
 
-                .total { margin-top: 2mm; padding-top: 1.5mm; border-top: 1px dashed #000; font-size: 9px; font-weight: 800; color: #000; text-align: right; }
-                .rodape { margin-top: 2.5mm; font-size: 7px; color: #333; text-align: center; border-top: 1px dashed #ccc; padding-top: 1.5mm; }
-                .aviso-fiscal { margin-top: 1mm; font-size: 6px; color: #777; text-align: center; }
+                .total { margin-top: 2mm; padding-top: 1.5mm; border-top: 1px dashed #000; font-size: 13px; font-weight: 800; color: #000; text-align: right; }
+                .rodape { margin-top: 2.5mm; font-size: 10px; color: #333; text-align: center; border-top: 1px dashed #ccc; padding-top: 1.5mm; }
+                .aviso-fiscal { margin-top: 1mm; font-size: 8px; color: #777; text-align: center; }
             </style>
         </head>
         <body>
@@ -417,10 +417,40 @@ function imprimirComanda() {
             <div class="aviso-fiscal">Este documento não possui valor fiscal.</div>
         </body>
         </html>
-    `);
-    janela.document.close();
-    janela.focus();
-    janela.print();
+    `;
+
+    // Impressão via iframe invisível anexado à própria página, em vez de
+    // window.open numa aba separada: a aba nova tomava o foco e deixava o
+    // modal de histórico (por trás) bloqueado/inacessível até ser fechada.
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(reciboHtml);
+    doc.close();
+
+    let iframeRemovido = false;
+    const removerIframe = () => {
+        if (iframeRemovido) return;
+        iframeRemovido = true;
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    };
+
+    // `afterprint` nem sempre dispara de forma confiável dentro de um
+    // iframe em todo navegador — o setTimeout garante que o iframe não
+    // fique preso no DOM pra sempre mesmo se o evento falhar.
+    iframe.contentWindow.onafterprint = removerIframe;
+    setTimeout(removerIframe, 5000);
+
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
 }
 
 window.onclick = function(event) {

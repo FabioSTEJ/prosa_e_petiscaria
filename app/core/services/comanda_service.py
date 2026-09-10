@@ -45,9 +45,16 @@ class ComandaService:
             total = comanda.calcular_total()
             usuario_abriu = Usuario.query.get(comanda.aberta_por_id)
             nome_abriu = usuario_abriu.nome_exibicao if usuario_abriu else "Sistema"
+            grupos = {}
+            for i in itens:
+                chave = (i.item_nome, i.valor_unitario)
+                if chave not in grupos:
+                    grupos[chave] = {'quantidade': 0, 'valor_total': 0.0}
+                grupos[chave]['quantidade'] += i.quantidade
+                grupos[chave]['valor_total'] += i.valor_total
             resumo = "|||".join(
-                f"{i.quantidade}::{i.item_nome}::{i.valor_unitario:.2f}::{i.valor_total:.2f}"
-                for i in itens
+                f"{dados['quantidade']}::{nome}::{valor_unitario:.2f}::{dados['valor_total']:.2f}"
+                for (nome, valor_unitario), dados in grupos.items()
             )
             db.session.add(Venda(
                 mesa_numero=mesa.numero,

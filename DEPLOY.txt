@@ -2,6 +2,42 @@
   PROSA E PETISCARIA — GUIA DE DEPLOY EM PRODUCAO
 ========================================================
 
+CONTROLE DE VERSAO E OS DOIS REPOSITORIOS
+--------------------------------------------
+Este projeto vive em dois repositorios Git separados:
+
+  - REPOSITORIO DE DESENVOLVIMENTO (prosa_e_petiscaria_dev): onde as
+    mudancas sao feitas e testadas primeiro.
+  - REPOSITORIO DE PRODUCAO (prosa_e_petiscaria): o que o servidor da
+    producao efetivamente usa no "git pull" do PASSO ATUALIZAR O SITE
+    (mais abaixo). So recebe uma mudanca depois que ela foi validada
+    no repositorio de desenvolvimento.
+
+Pra saber SE existe uma atualizacao pendente e O QUE ela muda, use os
+arquivos VERSION e CHANGELOG.txt na raiz do projeto:
+
+  - VERSION contem so o numero da versao atual (ex.: "1.1.0").
+  - CHANGELOG.txt lista, da mais nova pra mais antiga, o que mudou em
+    cada versao.
+
+Antes de atualizar a producao:
+  1. Confira a versao rodando no servidor:  cat VERSION  (ou "type
+     VERSION" no Windows, ou "docker compose exec web cat VERSION").
+  2. Compare com a versao do repositorio de desenvolvimento (ou do
+     repositorio de producao, se a mudanca ja tiver sido levada pra
+     la) — se forem iguais, nao ha nada novo pra atualizar.
+  3. Se forem diferentes, leia o CHANGELOG.txt pra ver exatamente o
+     que mudou entre as duas versoes antes de seguir pro deploy.
+
+Depois de QUALQUER atualizacao que mude o comportamento do sistema
+(nao so ajustes de deploy/infra), o VERSION deve ser incrementado e um
+novo bloco deve ser adicionado no TOPO do CHANGELOG.txt, seguindo o
+padrao MAJOR.MINOR.PATCH ja explicado no proprio arquivo. Isso vale
+tanto pra commits no repositorio de desenvolvimento quanto pra quando
+essas mudancas forem sincronizadas pro repositorio de producao — o
+numero de versao e o CHANGELOG devem viajar junto com o codigo.
+
+
 PRE-REQUISITOS
 --------------
 - Docker instalado na maquina/servidor
@@ -120,6 +156,8 @@ RECRIAR O ADMIN MANUALMENTE (caso tenha sido deletado):
 
 ATUALIZAR O SITE (nova versao do codigo):
   git pull origin main
+  cat VERSION   (confira se a versao mudou pra a esperada — se nao
+                 mudou, o pull nao trouxe nada novo)
   docker compose build
   docker compose stop web
   docker compose run --rm web python scripts/migrar_tudo.py

@@ -1,0 +1,55 @@
+========================================================
+  PROSA E PETISCARIA — HISTORICO DE VERSOES
+========================================================
+
+Este arquivo registra a versao de cada atualizacao relevante do
+sistema, do mais recente pro mais antigo. Antes de atualizar a
+producao (ver DEPLOY.txt), confira aqui o que mudou desde a versao
+que esta rodando no servidor.
+
+O numero da versao atual tambem fica sozinho no arquivo VERSION, na
+raiz do projeto, pra conferencia rapida (ex.: "cat VERSION" ou
+"type VERSION" no Windows).
+
+Formato de versao: MAJOR.MINOR.PATCH (ex.: 1.2.0)
+  - PATCH (1.1.X): correcao de bug, sem mudar comportamento esperado.
+  - MINOR (1.X.0): funcionalidade nova ou melhoria visivel, compativel
+    com o que ja existia.
+  - MAJOR (X.0.0): mudanca grande, que pode exigir atencao especial no
+    deploy (ex.: migracao de banco obrigatoria, mudanca de fluxo).
+
+
+[1.1.0] - 2026-09-09
+--------------------
+- Corrige nota (impressa e no historico de vendas) mostrando o mesmo
+  item repetido em varias linhas quando ele foi pedido em momentos
+  diferentes da comanda: agora soma tudo numa unica linha, com a
+  quantidade e o valor total corretos.
+- Impressao termica: fonte mais forte (negrito) e um pouco maior, pra
+  nao sair apagada mesmo com impressora e tinta em bom estado.
+- Coluna de valor unitario volta a aparecer na nota impressa (estava
+  escondida de proposito numa versao anterior).
+- Removida uma linha tracejada indesejada entre os itens da nota
+  impressa.
+- Layout da nota impressa ajustado pra bobina de 80mm (antes estava
+  pensado pra 58mm) — o texto agora usa cerca de 75mm de largura util,
+  com margem de seguranca de 2.5mm de cada lado.
+- Ao imprimir pelo historico de vendas, a tela por tras nao fica mais
+  bloqueada: a impressao agora usa um iframe interno na propria pagina,
+  em vez de abrir uma aba/janela nova.
+
+
+[1.0.0] - 2026-09-07 (commit 4daeb48 no repositorio de desenvolvimento)
+------------------------------------------------------------------------
+Linha de base adotada ao introduzir controle de versao neste projeto.
+Corresponde ao estado do sistema logo apos:
+- Fechamento de contas de mesas unidas em grupo, mover comanda entre
+  mesas e reformulacao da nota termica.
+- Reforco de seguranca no processo de migracao em deploy.
+- Nota impressa com valores por item e agrupamento de mesas unidas no
+  historico de vendas.
+- Comandas separadas por mesa, uniao de mesas e redesenho visual
+  completo do sistema.
+- Suite de testes automatizados, CI e ferramentas de desenvolvimento.
+
+========================================================
